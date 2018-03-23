@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+# VisualStudio自動生成
+.vs/
+.VC.db
