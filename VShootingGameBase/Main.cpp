@@ -28,95 +28,126 @@ private:
   int area[4];
   int areaColor;
 };
+struct DrawPattern
+{
+  int dSize[2];
+  int gHandleID;
+};
+class DrawManager
+{
+public:
+  DrawManager()
+  {
+    LoadDivGraph("resource\\player.png", 16, 4, 4, 16, 16, gHandle);
+    LoadDivGraph("resource\\bullet.png", 16, 4, 4, 8, 8,   gHandle + 16);
+    LoadDivGraph("resource\\enemy.png", 16, 4, 4, 16, 16, gHandle + 32);
+    dPattern[0].dSize[0] = 32;
+    dPattern[0].dSize[1] = 32;
+    dPattern[0].gHandleID = 0;
+    dPattern[1].dSize[0] = 32;
+    dPattern[1].dSize[1] = 32;
+    dPattern[1].gHandleID = 1;
+    dPattern[2].dSize[0] = 32;
+    dPattern[2].dSize[1] = 32;
+    dPattern[2].gHandleID = 2;
+    dPattern[3].dSize[0] = 32;
+    dPattern[3].dSize[1] = 32;
+    dPattern[3].gHandleID = 3;
+    dPattern[4].dSize[0] = 16;
+    dPattern[4].dSize[1] = 16;
+    dPattern[4].gHandleID = 16;
+    dPattern[5].dSize[0] = 32;
+    dPattern[5].dSize[1] = 32;
+    dPattern[5].gHandleID = 32;
+  }
+  ~DrawManager()
+  {
+    for (int i = 0; i < 48; i++) DeleteGraph(gHandle[i]);
+  }
+  void Draw(int posX, int posY, int pattern, int animeFrame, int *area)
+  {
+    DrawExtendGraph(posX + area[0] - dPattern[pattern].dSize[0] / 2,
+                    posY + area[1] - dPattern[pattern].dSize[1] / 2,
+                    posX + area[0] + dPattern[pattern].dSize[0] / 2 - 1,
+                    posY + area[1] + dPattern[pattern].dSize[1] / 2 - 1,
+                    gHandle[dPattern[pattern].gHandleID + animeFrame], true);
+  }
+  int *GetDSize(int pattern) { return dPattern[pattern].dSize; }
+private:
+  DrawPattern dPattern[10];
+  int gHandle[100];
+};
 class Bullet
 {
 public:
-  Bullet(int GHandle) :isExist(false), gHandle(GHandle)
-  {
-    dSize[0] = 16;
-    dSize[1] = 16;
-  }
-  void Exe(int *area)
+  Bullet() :isExist(false) {}
+  void Exe(DrawManager *dm, int *area)
   {
     if (isExist) {
       posX += velX;
       posY += velY;
-      if (posX < -dSize[0] / 2) isExist = false;
-      else if (posX > area[2] + dSize[0] / 2) isExist = false;
-      if (posY < -dSize[1] / 2) isExist = false;
-      else if (posY > area[3] + dSize[1] / 2) isExist = false;
+      if (posX < -dm->GetDSize(gPattern)[0] / 2) isExist = false;
+      else if (posX > area[2] + dm->GetDSize(gPattern)[0] / 2 )isExist = false;
+      if (posY < -dm->GetDSize(gPattern)[1] / 2) isExist = false;
+      else if (posY > area[3] + dm->GetDSize(gPattern)[1] / 2) isExist = false;
     }
   }
-  void Draw(int *area)
+  void Draw(DrawManager *dm, int *area)
   {
-    if (isExist) DrawExtendGraph((int)posX + area[0] - dSize[0] / 2, (int)posY + area[1] - dSize[1] / 2, (int)posX + area[0] + dSize[0] / 2 - 1, (int)posY + area[1] + dSize[1] / 2 - 1, gHandle, true);
+    if (isExist) dm->Draw((int)posX, (int)posY, gPattern, 0, area); 
   }
   bool IsExist() const { return isExist; }
-  void Shot(double pX, double pY, double vX, double vY)
+  void Shot(double pX, double pY, double vX, double vY, int gP)
   {
     isExist = true;
     posX = pX;
     posY = pY;
     velX = vX;
     velY = vY;
+    gPattern = gP;
   }
 private:
   bool isExist;
   double posX, posY;
   double velX, velY;
-  int gHandle;
-  int dSize[2];
+  int gPattern;
 };
 class BulletManager
 {
 public:
   BulletManager()
   {
-    LoadDivGraph("resource\\bullet.png", 16, 4, 4, 8, 8, gBHandle);
-    for (int i = 0; i < 16; i++) bullet[i] = new Bullet(gBHandle[0]);
+    for (int i = 0; i < 16; i++) bullet[i] = new Bullet();
   }
   ~BulletManager()
   {
     for (int i = 0; i < 16; i++) delete bullet[i];
-    for (int i = 0; i < 16; i++) DeleteGraph(gBHandle[i]);
   }
-  void Exe(int *area)
+  void Exe(DrawManager *dm, int *area)
   {
-    for (int i = 0; i < 16; i++) bullet[i]->Exe(area);
+    for (int i = 0; i < 16; i++) bullet[i]->Exe(dm, area);
   }
-  void Draw(int *area)
+  void Draw(DrawManager *dm, int *area)
   {
-    for (int i = 0; i < 16; i++) bullet[i]->Draw(area);
+    for (int i = 0; i < 16; i++) bullet[i]->Draw(dm, area);
   }
-  void Shot(double pX, double pY, double vX, double vY)
+  void Shot(double pX, double pY, double vX, double vY, int gPattern)
   {
     for (int i = 0; i < 16; i++) {
       if (!bullet[i]->IsExist()) {
-        bullet[i]->Shot(pX, pY, vX, vY);
+        bullet[i]->Shot(pX, pY, vX, vY, gPattern);
         break;
       }
     }
   }
 private:
-  int gBHandle[16];
   Bullet *bullet[16];
 };
 class Player
 {
 public:
-  Player() : posX(200.0), posY(500.0), speed(3.0), shotWait(0)
-  {
-    gSize[0] = 16;
-    gSize[1] = 16;
-    dSize[0] = 32;
-    dSize[1] = 32;
-    LoadDivGraph("resource\\player.png", 16, 4, 4, gSize[0], gSize[1], gHandle);
-  }
-  ~Player()
-  {
-    for (int i = 0; i < 16; i++) DeleteGraph(gHandle[i]);
-  }
-  void Exe(int *area, BulletManager *bm)
+  Player() : posX(200.0), posY(500.0), speed(3.0), shotWait(0) {}
+  void Exe(DrawManager *dm, int *area, BulletManager *bm)
   {
     const double sr2 = sqrt(2);
     int move[2] = { 0,0 };
@@ -127,8 +158,8 @@ public:
     if (keyBuffer[KEY_INPUT_RIGHT]) move[0]++;
     if (keyBuffer[KEY_INPUT_LEFT])  move[0]--;
     if (keyBuffer[KEY_INPUT_Z] && shotWait == 0) {
-      bm->Shot(posX - 4.0, posY - 6.0, 0.0, -8.0);
-      bm->Shot(posX + 4.0, posY - 6.0, 0.0, -8.0);
+      bm->Shot(posX - 4.0, posY - 6.0, 0.0, -8.0, 4);
+      bm->Shot(posX + 4.0, posY - 6.0, 0.0, -8.0, 4);
       shotWait = 8;
     }
     else {
@@ -148,28 +179,94 @@ public:
       posX += speed * move[0];
       posY += speed * move[1];
     }
-    if (posX < dSize[0] / 2) posX = (double)(dSize[0] / 2);
-    else if (posX > area[2] - dSize[0] / 2) posX = (double)(area[2] - dSize[0] / 2);
-    if (posY < dSize[1] / 2) posY = (double)(dSize[1] / 2);
-    else if (posY > area[3] - dSize[1] / 2) posY = (double)(area[3] - dSize[1] / 2);
+    if (posX < dm->GetDSize(gPattern)[0] / 2) posX = (double)(dm->GetDSize(gPattern)[0] / 2);
+    else if (posX > area[2] - dm->GetDSize(gPattern)[0] / 2) posX = (double)(area[2] - dm->GetDSize(gPattern)[0] / 2);
+    if (posY < dm->GetDSize(gPattern)[1] / 2) posY = (double)(dm->GetDSize(gPattern)[1] / 2);
+    else if (posY > area[3] - dm->GetDSize(gPattern)[1] / 2) posY = (double)(area[3] - dm->GetDSize(gPattern)[1] / 2);
   }
-  void Draw(int *area)
+  void Draw(DrawManager *dm, int *area)
   {
-    DrawExtendGraph((int)posX + area[0] - dSize[0] / 2, (int)posY + area[1] - dSize[1] / 2, (int)posX + area[0] + dSize[0] / 2 - 1, (int)posY + area[1] + dSize[1] / 2 - 1, gHandle[gPattern], true);
+    dm->Draw((int)posX, (int)posY, gPattern, 0, area);
   }
 private:
   double posX, posY;
   double speed;
   int gPattern;
-  int gHandle[16];
-  int gSize[2], dSize[2];
   int shotWait;
 };
 class Enemy
 {
 public:
-  Enemy()
-  {}
+  Enemy() :isExist(false) {}
+  void Exe(DrawManager *dm, int *area)
+  {
+    if (isExist) {
+      posX += velX;
+      posY += velY;
+      animeFrame++;
+      if (posX < -dm->GetDSize(gPattern)[0] / 2) isExist = false;
+      else if (posX > area[2] + dm->GetDSize(gPattern)[0] / 2)isExist = false;
+      if (posY < -dm->GetDSize(gPattern)[1] / 2) isExist = false;
+      else if (posY > area[3] + dm->GetDSize(gPattern)[1] / 2) isExist = false;
+    }
+  }
+  void Draw(DrawManager *dm, int *area)
+  {
+    if (isExist) dm->Draw((int)posX, (int)posY, gPattern, (animeFrame / 6) % 6, area);
+  }
+  bool IsExist() const { return isExist; }
+  void Spawn(double pX, double pY, double vX, double vY, int gP)
+  {
+    isExist = true;
+    posX = pX;
+    posY = pY;
+    velX = vX;
+    velY = vY;
+    gPattern = gP;
+    animeFrame = 0;
+  }
+private:
+  bool isExist;
+  double posX, posY;
+  double velX, velY;
+  int gPattern;
+  int animeFrame;
+};
+class EnemyManager
+{
+public:
+  EnemyManager() : spawnWait(20)
+  {
+    for (int i = 0; i < 16; i++) enemy[i] = new Enemy();
+  }
+  ~EnemyManager()
+  {
+    for (int i = 0; i < 16; i++) delete enemy[i];
+  }
+  void Exe(DrawManager *dm, int *area)
+  {
+    if (--spawnWait == 0) {
+      Spawn(100, 0, 0, 2, 5);
+      spawnWait = 40;
+    }
+    for (int i = 0; i < 16; i++) enemy[i]->Exe(dm, area);
+  }
+  void Draw(DrawManager *dm, int *area)
+  {
+    for (int i = 0; i < 16; i++) enemy[i]->Draw(dm, area);
+  }
+  void Spawn(double pX, double pY, double vX, double vY, int gPattern)
+  {
+    for (int i = 0; i < 16; i++) {
+      if (!enemy[i]->IsExist()) {
+        enemy[i]->Spawn(pX, pY, vX, vY, gPattern);
+        break;
+      }
+    }
+  }
+private:
+  Enemy *enemy[16];
+  int spawnWait;
 };
 
 class TitleScene : public BaseScene
@@ -220,31 +317,39 @@ public:
   GameScene()
   {
     ui = new UI();
+    dm = new DrawManager();
     player = new Player();
     bm = new BulletManager();
+    em = new EnemyManager();
   }
   ~GameScene()
   {
     delete ui;
+    delete dm;
     delete player;
     delete bm;
+    delete em;
   }
   virtual int Exe()
   {
-    player->Exe(ui->GetArea(), bm);
-    bm->Exe(ui->GetArea());
+    player->Exe(dm, ui->GetArea(), bm);
+    bm->Exe(dm, ui->GetArea());
+    em->Exe(dm, ui->GetArea());
     return 0;
   }
   virtual void Draw()
   {
     ui->Draw();
-    bm->Draw(ui->GetArea());
-    player->Draw(ui->GetArea());
+    bm->Draw(dm, ui->GetArea());
+    em->Draw(dm, ui->GetArea());
+    player->Draw(dm, ui->GetArea());
   }
 private:
   UI *ui;
+  DrawManager *dm;
   Player *player;
   BulletManager *bm;
+  EnemyManager *em;
 };
 
 // èâä˙âªópä÷êî(ê≥èÌèIóπÇ≈trueÇï‘Ç∑)
