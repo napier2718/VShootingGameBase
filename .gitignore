@@ -33,4 +33,6 @@
 
 # VisualStudio自動生成
 .vs/
-.VC.db
+x64/
+VShootingGameBase/x64/
+VShootingGameBase.VC.db
