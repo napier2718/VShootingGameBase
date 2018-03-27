@@ -337,6 +337,19 @@ public:
         cTemp[length] = '\0';
         object.text += cTemp;
       }
+      bgList.push_back(object);
+    }
+    fread_s(&size, sizeof(int), sizeof(int), 1, dataFile);
+    for (int i = 0; i < size; i++) {
+      Object object;
+      fread_s(&object.type, sizeof(ObjectType), sizeof(ObjectType), 1, dataFile);
+      fread_s(&object.posX, sizeof(int) * 5, sizeof(int), 5, dataFile);
+      if (object.type == text) {
+        fread_s(&length, sizeof(int), sizeof(int), 1, dataFile);
+        fread_s(cTemp, sizeof(char) * length, sizeof(char), length, dataFile);
+        cTemp[length] = '\0';
+        object.text += cTemp;
+      }
       objectList.push_back(object);
     }
     fread_s(&size, sizeof(int), sizeof(int), 1, dataFile);
@@ -348,7 +361,7 @@ public:
     }
     fclose(dataFile);
     fColor = GetColor(0, 255, 128);
-    bColor = GetColor(0, 0, 0);
+    bColor = GetColor(128, 128, 255);
   }
   ~TitleScene()
   {
@@ -374,25 +387,38 @@ public:
   }
   virtual void Draw()
   {
+    for (size_t i = 0; i < bgList.size(); i++) {
+      switch (bgList[i].type) {
+      case image:
+        DrawExtendGraph(bgList[i].posX,  bgList[i].posY,
+                        bgList[i].posX + bgList[i].sizeX - 1,
+                        bgList[i].posY + bgList[i].sizeY - 1,
+                        gHandleList[bgList[i].id], true);
+        break;
+      case text:
+        DrawStringToHandle(bgList[i].posX, bgList[i].posY, bgList[i].text.c_str(), fColor, fHandleList[bgList[i].id]);
+        break;
+      }
+    }
+    DrawBox(linkList[select].posX, linkList[select].posY, linkList[select].posX + linkList[select].sizeX - 1, linkList[select].posY + linkList[select].sizeY - 1, bColor, true);
     for (size_t i = 0; i < objectList.size(); i++) {
       switch (objectList[i].type) {
       case image:
         DrawExtendGraph(objectList[i].posX, objectList[i].posY,
-                        objectList[i].posX + objectList[i].sizeX - 1,
-                        objectList[i].posY + objectList[i].sizeY - 1,
-                        gHandleList[objectList[i].id], true);
+          objectList[i].posX + objectList[i].sizeX - 1,
+          objectList[i].posY + objectList[i].sizeY - 1,
+          gHandleList[objectList[i].id], true);
         break;
       case text:
         DrawStringToHandle(objectList[i].posX, objectList[i].posY, objectList[i].text.c_str(), fColor, fHandleList[objectList[i].id]);
         break;
       }
     }
-    DrawBox(linkList[select].posX, linkList[select].posY, linkList[select].posX + linkList[select].sizeX - 1, linkList[select].posY + linkList[select].sizeY - 1, bColor, false);
   }
 private:
   vector<int> gHandleList;
   vector<int> fHandleList;
-  vector<Object> objectList;
+  vector<Object> bgList, objectList;
   vector<Link> linkList;
   char keyBuffer[256], oKerBuffer[256], eKeyBuffer[256];
   int select;
