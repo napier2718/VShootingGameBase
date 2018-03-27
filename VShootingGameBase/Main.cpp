@@ -1,5 +1,38 @@
 #include "DxLib.h"
+#include <cstdio>
+#include <cstring>
+#include <vector>
 #include <math.h>
+
+#define TEXTSIZE 128
+
+using namespace std;
+
+enum ObjectType
+{
+  image,
+  text,
+};
+struct Object
+{
+  ObjectType type;
+  int posX, posY;
+  int sizeX, sizeY;
+  int id;
+  string text;
+};
+enum LinkType
+{
+  none,
+  start,
+  end,
+};
+struct Link
+{
+  LinkType link;
+  int posX, posY;
+  int sizeX, sizeY;
+};
 
 class BaseScene
 {
@@ -274,26 +307,66 @@ class TitleScene : public BaseScene
 public:
   TitleScene() :select(0) 
   {
-    fHandle = CreateFontToHandle("メイリオ", 32, -1, DX_FONTTYPE_ANTIALIASING_EDGE_8X8);
+    FILE *dataFile;
+    int size, length, fontSize;
+    char cTemp[TEXTSIZE];
+    fopen_s(&dataFile, "data\\title.data", "rb");
+    fread_s(&size, sizeof(int), sizeof(int), 1, dataFile);
+    for (int i = 0; i < size; i++) {
+      fread_s(&length, sizeof(int), sizeof(int), 1, dataFile);
+      fread_s(cTemp, sizeof(char) * length, sizeof(char), length, dataFile);
+      cTemp[length] = '\0';
+      gHandleList.push_back(LoadGraph(cTemp));
+    }
+    fread_s(&size, sizeof(int), sizeof(int), 1, dataFile);
+    for (int i = 0; i < size; i++) {
+      fread_s(&length, sizeof(int), sizeof(int), 1, dataFile);
+      fread_s(cTemp, sizeof(char) * length, sizeof(char), length, dataFile);
+      cTemp[length] = '\0';
+      fread_s(&fontSize, sizeof(int), sizeof(int), 1, dataFile);
+      fHandleList.push_back(CreateFontToHandle(cTemp, fontSize, -1, DX_FONTTYPE_ANTIALIASING_EDGE_8X8));
+    }
+    fread_s(&size, sizeof(int), sizeof(int), 1, dataFile);
+    for (int i = 0; i < size; i++) {
+      Object object;
+      fread_s(&object.type, sizeof(ObjectType), sizeof(ObjectType), 1, dataFile);
+      fread_s(&object.posX, sizeof(int) * 5, sizeof(int), 5, dataFile);
+      if (object.type == text) {
+        fread_s(&length, sizeof(int), sizeof(int), 1, dataFile);
+        fread_s(cTemp, sizeof(char) * length, sizeof(char), length, dataFile);
+        cTemp[length] = '\0';
+        object.text += cTemp;
+      }
+      objectList.push_back(object);
+    }
+    fread_s(&size, sizeof(int), sizeof(int), 1, dataFile);
+    for (int i = 0; i < size; i++) {
+      Link link;
+      fread_s(&link.posX, sizeof(int) * 4, sizeof(int), 4, dataFile);
+      fread_s(&link.link, sizeof(LinkType), sizeof(LinkType), 1, dataFile);
+      linkList.push_back(link);
+    }
+    fclose(dataFile);
     fColor = GetColor(0, 255, 128);
-    bColor = GetColor(128, 128, 255);
+    bColor = GetColor(0, 0, 0);
   }
   ~TitleScene()
   {
-    DeleteFontToHandle(fHandle);
+    for (size_t i = 0; i < gHandleList.size(); i++) DeleteGraph(gHandleList[i]);
+    for (size_t i = 0; i < fHandleList.size(); i++) DeleteFontToHandle(fHandleList[i]);
   }
   virtual int Exe()
   {
     memcpy_s(oKerBuffer, 256, keyBuffer, 256);
     GetHitKeyStateAll(keyBuffer);
     for (int i = 0; i < 256; i++) eKeyBuffer[i] = keyBuffer[i] & ~oKerBuffer[i];
-    if (eKeyBuffer[KEY_INPUT_UP])   select = (select + 2 - 1) % 2;
-    if (eKeyBuffer[KEY_INPUT_DOWN]) select = ++select % 2;
+    if (eKeyBuffer[KEY_INPUT_UP])   select = (select + (int)(linkList.size()) - 1) % (int)(linkList.size());
+    if (eKeyBuffer[KEY_INPUT_DOWN]) select = ++select % (int)(linkList.size());
     if (eKeyBuffer[KEY_INPUT_Z]) {
-      switch (select) {
-      case 0:
+      switch (linkList[select].link) {
+      case start:
         return 1;
-      case 1:
+      case LinkType::end:
         return -1;
       }
     }
@@ -301,14 +374,28 @@ public:
   }
   virtual void Draw()
   {
-    DrawBox(390, 290 + select * 40, 546, 342 + select * 40, bColor, true);
-    DrawStringToHandle(400, 300, "スタート", fColor, fHandle);
-    DrawStringToHandle(430, 340, "終了", fColor, fHandle);
+    for (size_t i = 0; i < objectList.size(); i++) {
+      switch (objectList[i].type) {
+      case image:
+        DrawExtendGraph(objectList[i].posX, objectList[i].posY,
+                        objectList[i].posX + objectList[i].sizeX - 1,
+                        objectList[i].posY + objectList[i].sizeY - 1,
+                        gHandleList[objectList[i].id], true);
+        break;
+      case text:
+        DrawStringToHandle(objectList[i].posX, objectList[i].posY, objectList[i].text.c_str(), fColor, fHandleList[objectList[i].id]);
+        break;
+      }
+    }
+    DrawBox(linkList[select].posX, linkList[select].posY, linkList[select].posX + linkList[select].sizeX - 1, linkList[select].posY + linkList[select].sizeY - 1, bColor, false);
   }
 private:
+  vector<int> gHandleList;
+  vector<int> fHandleList;
+  vector<Object> objectList;
+  vector<Link> linkList;
   char keyBuffer[256], oKerBuffer[256], eKeyBuffer[256];
   int select;
-  int fHandle;
   int fColor, bColor;
 };
 class GameScene : public BaseScene
