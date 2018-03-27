@@ -308,57 +308,12 @@ public:
   TitleScene() :select(0) 
   {
     FILE *dataFile;
-    int size, length, fontSize;
-    char cTemp[TEXTSIZE];
     fopen_s(&dataFile, "data\\title.data", "rb");
-    fread_s(&size, sizeof(int), sizeof(int), 1, dataFile);
-    for (int i = 0; i < size; i++) {
-      fread_s(&length, sizeof(int), sizeof(int), 1, dataFile);
-      fread_s(cTemp, sizeof(char) * length, sizeof(char), length, dataFile);
-      cTemp[length] = '\0';
-      gHandleList.push_back(LoadGraph(cTemp));
-    }
-    fread_s(&size, sizeof(int), sizeof(int), 1, dataFile);
-    for (int i = 0; i < size; i++) {
-      fread_s(&length, sizeof(int), sizeof(int), 1, dataFile);
-      fread_s(cTemp, sizeof(char) * length, sizeof(char), length, dataFile);
-      cTemp[length] = '\0';
-      fread_s(&fontSize, sizeof(int), sizeof(int), 1, dataFile);
-      fHandleList.push_back(CreateFontToHandle(cTemp, fontSize, -1, DX_FONTTYPE_ANTIALIASING_EDGE_8X8));
-    }
-    fread_s(&size, sizeof(int), sizeof(int), 1, dataFile);
-    for (int i = 0; i < size; i++) {
-      Object object;
-      fread_s(&object.type, sizeof(ObjectType), sizeof(ObjectType), 1, dataFile);
-      fread_s(&object.posX, sizeof(int) * 5, sizeof(int), 5, dataFile);
-      if (object.type == text) {
-        fread_s(&length, sizeof(int), sizeof(int), 1, dataFile);
-        fread_s(cTemp, sizeof(char) * length, sizeof(char), length, dataFile);
-        cTemp[length] = '\0';
-        object.text += cTemp;
-      }
-      bgList.push_back(object);
-    }
-    fread_s(&size, sizeof(int), sizeof(int), 1, dataFile);
-    for (int i = 0; i < size; i++) {
-      Object object;
-      fread_s(&object.type, sizeof(ObjectType), sizeof(ObjectType), 1, dataFile);
-      fread_s(&object.posX, sizeof(int) * 5, sizeof(int), 5, dataFile);
-      if (object.type == text) {
-        fread_s(&length, sizeof(int), sizeof(int), 1, dataFile);
-        fread_s(cTemp, sizeof(char) * length, sizeof(char), length, dataFile);
-        cTemp[length] = '\0';
-        object.text += cTemp;
-      }
-      objectList.push_back(object);
-    }
-    fread_s(&size, sizeof(int), sizeof(int), 1, dataFile);
-    for (int i = 0; i < size; i++) {
-      Link link;
-      fread_s(&link.posX, sizeof(int) * 4, sizeof(int), 4, dataFile);
-      fread_s(&link.link, sizeof(LinkType), sizeof(LinkType), 1, dataFile);
-      linkList.push_back(link);
-    }
+    dataFile = LoadImages(gHandleList, dataFile);
+    dataFile = CreateFonts(fHandleList, dataFile);
+    dataFile = ReadObjects(bgList, dataFile);
+    dataFile = ReadObjects(objectList, dataFile);
+    dataFile = ReadLinks(linkList, dataFile);
     fclose(dataFile);
     fColor = GetColor(0, 255, 128);
     bColor = GetColor(128, 128, 255);
@@ -387,35 +342,85 @@ public:
   }
   virtual void Draw()
   {
-    for (size_t i = 0; i < bgList.size(); i++) {
-      switch (bgList[i].type) {
-      case image:
-        DrawExtendGraph(bgList[i].posX,  bgList[i].posY,
-                        bgList[i].posX + bgList[i].sizeX - 1,
-                        bgList[i].posY + bgList[i].sizeY - 1,
-                        gHandleList[bgList[i].id], true);
-        break;
-      case text:
-        DrawStringToHandle(bgList[i].posX, bgList[i].posY, bgList[i].text.c_str(), fColor, fHandleList[bgList[i].id]);
-        break;
-      }
-    }
+    for (size_t i = 0; i < bgList.size(); i++) DrawObject(bgList[i]);
     DrawBox(linkList[select].posX, linkList[select].posY, linkList[select].posX + linkList[select].sizeX - 1, linkList[select].posY + linkList[select].sizeY - 1, bColor, true);
-    for (size_t i = 0; i < objectList.size(); i++) {
-      switch (objectList[i].type) {
-      case image:
-        DrawExtendGraph(objectList[i].posX, objectList[i].posY,
-          objectList[i].posX + objectList[i].sizeX - 1,
-          objectList[i].posY + objectList[i].sizeY - 1,
-          gHandleList[objectList[i].id], true);
-        break;
-      case text:
-        DrawStringToHandle(objectList[i].posX, objectList[i].posY, objectList[i].text.c_str(), fColor, fHandleList[objectList[i].id]);
-        break;
-      }
-    }
+    for (size_t i = 0; i < objectList.size(); i++) DrawObject(objectList[i]);
   }
 private:
+  FILE *ReadText(char *text, FILE *dataFile)
+  {
+    int length;
+    fread_s(&length, sizeof(int), sizeof(int), 1, dataFile);
+    fread_s(text,    sizeof(char) * length, sizeof(char), length, dataFile);
+    text[length] = '\0';
+    return dataFile;
+  }
+  FILE *LoadImages(vector<int> &gHandleList, FILE *dataFile)
+  {
+    int size;
+    char filePath[TEXTSIZE];
+    fread_s(&size, sizeof(int), sizeof(int), 1, dataFile);
+    for (int i = 0; i < size; i++) {
+      dataFile = ReadText(filePath, dataFile);
+      gHandleList.push_back(LoadGraph(filePath));
+    }
+    return dataFile;
+  }
+  FILE *CreateFonts(vector<int> &fHandleList, FILE *dataFile)
+  {
+    int size, fontSize;
+    char fontName[TEXTSIZE];
+    fread_s(&size, sizeof(int), sizeof(int), 1, dataFile);
+    for (int i = 0; i < size; i++) {
+      dataFile = ReadText(fontName, dataFile);
+      fread_s(&fontSize, sizeof(int), sizeof(int), 1, dataFile);
+      fHandleList.push_back(CreateFontToHandle(fontName, fontSize, -1, DX_FONTTYPE_ANTIALIASING_EDGE_8X8));
+    }
+    return dataFile;
+  }
+  FILE *ReadObjects(vector<Object> &objectList, FILE *dataFile)
+  {
+    int size;
+    char text[TEXTSIZE];
+    fread_s(&size, sizeof(int), sizeof(int), 1, dataFile);
+    for (int i = 0; i < size; i++) {
+      Object object;
+      fread_s(&object.type, sizeof(ObjectType), sizeof(ObjectType), 1, dataFile);
+      fread_s(&object.posX, sizeof(int) * 5, sizeof(int), 5, dataFile);
+      if (object.type == ObjectType::text) {
+        dataFile = ReadText(text, dataFile);
+        object.text += text;
+      }
+      objectList.push_back(object);
+    }
+    return dataFile;
+  }
+  FILE *ReadLinks(vector<Link> &linkList, FILE *dataFile)
+  {
+    int size;
+    fread_s(&size, sizeof(int), sizeof(int), 1, dataFile);
+    for (int i = 0; i < size; i++) {
+      Link link;
+      fread_s(&link.posX, sizeof(int) * 4, sizeof(int), 4, dataFile);
+      fread_s(&link.link, sizeof(LinkType), sizeof(LinkType), 1, dataFile);
+      linkList.push_back(link);
+    }
+    return dataFile;
+  }
+  void DrawObject(const Object &object) const
+  {
+    switch (object.type) {
+    case image:
+      DrawExtendGraph(object.posX, object.posY,
+                      object.posX + object.sizeX - 1,
+                      object.posY + object.sizeY - 1,
+                      gHandleList[object.id], true);
+      break;
+    case text:
+      DrawStringToHandle(object.posX, object.posY, object.text.c_str(), fColor, fHandleList[object.id]);
+      break;
+    }
+  }
   vector<int> gHandleList;
   vector<int> fHandleList;
   vector<Object> bgList, objectList;
