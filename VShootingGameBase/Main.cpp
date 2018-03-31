@@ -311,8 +311,7 @@ public:
     fopen_s(&dataFile, "data\\title.data", "rb");
     dataFile = LoadImages(gHandleList, dataFile);
     dataFile = CreateFonts(fHandleList, dataFile);
-    dataFile = ReadObjects(bgList, dataFile);
-    dataFile = ReadObjects(objectList, dataFile);
+    dataFile = ReadObjects(objectList, bgListSize, dataFile);
     dataFile = ReadLinks(linkList, dataFile);
     fclose(dataFile);
     fColor = GetColor(0, 255, 128);
@@ -342,9 +341,9 @@ public:
   }
   virtual void Draw()
   {
-    for (size_t i = 0; i < bgList.size(); i++) DrawObject(bgList[i]);
+    for (size_t i = 0; i < bgListSize; i++) DrawObject(objectList[i]);
     DrawBox(linkList[select].posX, linkList[select].posY, linkList[select].posX + linkList[select].sizeX - 1, linkList[select].posY + linkList[select].sizeY - 1, bColor, true);
-    for (size_t i = 0; i < objectList.size(); i++) DrawObject(objectList[i]);
+    for (size_t i = bgListSize; i < objectList.size(); i++) DrawObject(objectList[i]);
   }
 private:
   FILE *ReadText(char *text, FILE *dataFile)
@@ -378,11 +377,12 @@ private:
     }
     return dataFile;
   }
-  FILE *ReadObjects(vector<Object> &objectList, FILE *dataFile)
+  FILE *ReadObjects(vector<Object> &objectList, int &bgSize, FILE *dataFile)
   {
     int size;
     char text[TEXTSIZE];
     fread_s(&size, sizeof(int), sizeof(int), 1, dataFile);
+    fread_s(&bgSize, sizeof(int), sizeof(int), 1, dataFile);
     for (int i = 0; i < size; i++) {
       Object object;
       fread_s(&object.type, sizeof(ObjectType), sizeof(ObjectType), 1, dataFile);
@@ -423,8 +423,9 @@ private:
   }
   vector<int> gHandleList;
   vector<int> fHandleList;
-  vector<Object> bgList, objectList;
+  vector<Object> objectList;
   vector<Link> linkList;
+  int bgListSize;
   char keyBuffer[256], oKerBuffer[256], eKeyBuffer[256];
   int select;
   int fColor, bColor;
