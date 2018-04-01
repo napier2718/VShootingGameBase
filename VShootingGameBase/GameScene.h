@@ -2,9 +2,7 @@
 #include "BaseScene.h"
 #include "DrawManager.h"
 #include "GameUI.h"
-#include "Player.h"
-#include "Enemy.h"
-#include "Bullet.h"
+#include "ObjectManager.h"
 
 class GameScene :public BaseScene
 {
@@ -16,7 +14,5 @@ public:
 private:
   DrawManager *dm;
   GameUI *gameui;
-  BaseObject *player;
-  BulletManager *bm;
-  EnemyManager *em;
+  ObjectManager *om;
 };

@@ -10,7 +10,7 @@ Player::Player() :BaseObject(), speed(3.0), shotWait(0)
   posX = 200.0;
   posY = 500.0;
 }
-void Player::Exe(BulletManager *bm, DrawManager *dm, int *area)
+void Player::Exe(DrawManager *dm, int *area, BaseObject **bList)
 {
   const double sr2 = sqrt(2);
   int move[2] = { 0,0 };
@@ -21,8 +21,8 @@ void Player::Exe(BulletManager *bm, DrawManager *dm, int *area)
   if (keyBuffer[KEY_INPUT_RIGHT]) move[0]++;
   if (keyBuffer[KEY_INPUT_LEFT])  move[0]--;
   if (keyBuffer[KEY_INPUT_Z] && shotWait == 0) {
-    bm->Shot(posX - 4.0, posY - 6.0, 0.0, -8.0, 4);
-    bm->Shot(posX + 4.0, posY - 6.0, 0.0, -8.0, 4);
+    Shoot(bList, posX - 4.0, posY - 6.0, 0.0, -8.0, 4, 1);
+    Shoot(bList, posX + 4.0, posY - 6.0, 0.0, -8.0, 4, 1);
     shotWait = 8;
   }
   else {
@@ -50,4 +50,14 @@ void Player::Exe(BulletManager *bm, DrawManager *dm, int *area)
 void Player::Draw(DrawManager *dm, int *area)
 {
   dm->Draw((int)posX, (int)posY, gPattern, 0, area);
+}
+void Player::Hit() { isExist = false; }
+void Player::Shoot(BaseObject **bList, double pX, double pY, double vX, double vY, int gP, int hbP)
+{
+  for (int i = 0; i < 16; i++) {
+    if (!bList[i]->IsExist()) {
+      dynamic_cast<Bullet*>(bList[i])->Shoot(pX, pY, vX, vY, gP, hbP);
+      break;
+    }
+  }
 }
