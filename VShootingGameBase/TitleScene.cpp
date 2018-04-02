@@ -24,7 +24,7 @@ TitleScene::~TitleScene()
   for (size_t i = 0; i < gHandleList.size(); i++) DeleteGraph(gHandleList[i]);
   for (size_t i = 0; i < fHandleList.size(); i++) DeleteFontToHandle(fHandleList[i]);
 }
-int TitleScene::Exe()
+Scene TitleScene::Exe()
 {
   memcpy_s(oKerBuffer, 256, keyBuffer, 256);
   GetHitKeyStateAll(keyBuffer);
@@ -33,13 +33,13 @@ int TitleScene::Exe()
   if (eKeyBuffer[KEY_INPUT_DOWN]) select = ++select % (int)(linkList.size());
   if (eKeyBuffer[KEY_INPUT_Z]) {
     switch (linkList[select].link) {
-    case start:
-      return 1;
-    case LinkType::end:
-      return -1;
+    case startLink:
+      return gameScene;
+    case endLink:
+      return endScene;
     }
   }
-  return 0;
+  return preserve;
 }
 void TitleScene::Draw()
 {

@@ -1,10 +1,12 @@
 #include "GameScene.h"
 
+#include "DxLib.h"
+
 GameScene::GameScene()
 {
-  dm = new DrawManager();
   gameui = new GameUI();
   om = new ObjectManager();
+  dm = new DrawManager(gameui->GetArea());
 }
 GameScene::~GameScene()
 {
@@ -12,13 +14,15 @@ GameScene::~GameScene()
   delete gameui;
   delete om;
 }
-int GameScene::Exe()
+Scene GameScene::Exe()
 {
   om->Exe(dm, gameui->GetArea());
-  return 0;
+  return preserve;
 }
 void GameScene::Draw()
 {
   gameui->Draw();
-  om->Draw(dm, gameui->GetArea());
+  SetDrawArea(gameui->GetArea()[0], gameui->GetArea()[1], gameui->GetArea()[0] + gameui->GetArea()[2], gameui->GetArea()[1] + gameui->GetArea()[3]);
+  om->Draw(dm);
+  SetDrawArea(0, 0, WINDOW_X, WINDOW_Y);
 }

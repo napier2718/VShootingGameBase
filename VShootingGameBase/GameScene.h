@@ -9,7 +9,7 @@ class GameScene :public BaseScene
 public:
   GameScene();
   ~GameScene();
-  int Exe();
+  Scene Exe();
   void Draw();
 private:
   DrawManager *dm;

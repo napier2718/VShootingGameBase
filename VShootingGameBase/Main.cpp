@@ -9,9 +9,9 @@ bool Initialize(bool IsWindow, char *WindowTitle)
   SetOutApplicationLogValidFlag(false);         // ログを生成しない
   ChangeWindowMode(IsWindow);                   // ウインドウで起動させるかどうか
   SetWindowSizeChangeEnableFlag(false, false);  // ウィンドウサイズ固定
-  SetGraphMode(800, 600, 32);                   // 解像度設定
+  SetGraphMode(WINDOW_X, WINDOW_Y, 32);         // 解像度設定
   if (IsWindow) {
-    SetWindowSize(800, 600);                    // ウィンドウサイズ設定
+    SetWindowSize(WINDOW_X, WINDOW_Y);          // ウィンドウサイズ設定
     SetMainWindowText(WindowTitle);             // ウィンドウのタイトルを変更
   }
   if (DxLib_Init() == -1) return false;         // DXライブラリ初期化処理 エラーが起きたら終了
@@ -39,16 +39,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
   // ループ
   while (scene != NULL && StartLoop()) {
     switch (scene->Exe()) {
-    case -1:
+    case preserve:
+      scene->Draw();
+      break;
+    case gameScene:
+      delete scene;
+      scene = new GameScene();
+      break;
+    case endScene:
       delete scene;
       scene = NULL;
       break;
-    case 0:
-      scene->Draw();
-      break;
-    case 1:
-      delete scene;
-      scene = new GameScene();
     }
   }
   DxLib_End();  // DXライブラリ使用の終了処理

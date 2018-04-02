@@ -6,11 +6,11 @@ class Enemy :public BaseObject
 public:
   Enemy() :BaseObject() {}
   void Exe(DrawManager *dm, int *area, BaseObject **bList);
-  void Draw(DrawManager *dm, int *area);
+  void Draw(DrawManager *dm);
   void Hit();
-  void Spawn(double pX, double pY, double vX, double vY, int gP, int hbP);
+  void Spawn(Vector<double> &p, Vector<double> &v, int gP, int hbP);
 private:
-  double velX, velY;
+  Vector<double> vel;
   int gPattern;
   int animeFrame;
 };

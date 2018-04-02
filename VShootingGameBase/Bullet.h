@@ -6,10 +6,10 @@ class Bullet :public BaseObject
 public:
   Bullet() :BaseObject() {}
   void Exe(DrawManager *dm, int *area, BaseObject **bList);
-  void Draw(DrawManager *dm, int *area);
+  void Draw(DrawManager *dm);
   void Hit();
-  void Shoot(double pX, double pY, double vX, double vY, int gP, int hbP);
+  void Shoot(Vector<double> &p, const double &Angle, Vector<double> &v, int gP, int hbP);
 private:
-  double velX, velY;
+  Vector<double> vel;
   int gPattern;
 };

@@ -20,8 +20,8 @@ struct Object
 enum LinkType
 {
   none,
-  start,
-  end,
+  startLink,
+  endLink,
 };
 struct Link
 {
@@ -35,7 +35,7 @@ class TitleScene :public BaseScene
 public:
   TitleScene();
   ~TitleScene();
-  int Exe();
+  Scene Exe();
   void Draw();
 private:
   FILE *ReadText(char*, FILE*);

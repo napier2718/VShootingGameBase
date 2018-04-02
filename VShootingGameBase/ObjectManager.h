@@ -5,17 +5,17 @@
 
 struct HitBox
 {
-  double sizeX, sizeY;
+  Vector<double> size;
+  double radius;
 };
 class ObjectManager
 {
 public:
   ObjectManager() :spawnWait(1)
   {
-    hbList[0].sizeX = 32.0;
-    hbList[0].sizeY = 32.0;
-    hbList[1].sizeX = 4.0;
-    hbList[1].sizeY = 16.0;
+    hb[0].size.set(32.0, 32.0);
+    hb[1].size.set(4.0,  16.0);
+    CalcRadius();
     player = new Player();
     for (int i = 0; i < 16; i++) enemy[i] = new Enemy();
     for (int i = 0; i < 32; i++) pBullet[i] = new Bullet();
@@ -33,7 +33,7 @@ public:
     if (--spawnWait == 0) {
       for (int i = 0; i < 16; i++) {
         if (!enemy[i]->IsExist()) {
-          dynamic_cast<Enemy*>(enemy[i])->Spawn(100, 0, 0, 2, 5, 0);
+          dynamic_cast<Enemy*>(enemy[i])->Spawn(Vector<double>(100.0, 0.0), Vector<double>(0.0, 2.0), 5, 0);
           break;
         }
       }
@@ -54,23 +54,58 @@ public:
       }
     }
   }
-  void Draw(DrawManager *dm, int *area)
+  void Draw(DrawManager *dm)
   {
-    for (int i = 0; i < 32; i++) pBullet[i]->Draw(dm, area);
-    for (int i = 0; i < 32; i++) eBullet[i]->Draw(dm, area);
-    for (int i = 0; i < 16; i++) enemy[i]->Draw(dm, area);
-    player->Draw(dm, area);
+    for (int i = 0; i < 32; i++) pBullet[i]->Draw(dm);
+    for (int i = 0; i < 32; i++) eBullet[i]->Draw(dm);
+    for (int i = 0; i < 16; i++) enemy[i]->Draw(dm);
+    player->Draw(dm);
   }
 private:
+  void CalcRadius()
+  {
+    for (int i = 0; i < 10; i++) {
+      hb[i].radius = (hb[i].size * 0.5).getLength();
+    }
+  }
   bool HitCheck(BaseObject *a, BaseObject *b)
   {
-    if (a->posX - hbList[a->hbPattern].sizeX / 2 >= b->posX + hbList[b->hbPattern].sizeX / 2) return false;
-    if (a->posX + hbList[a->hbPattern].sizeX / 2 <= b->posX - hbList[b->hbPattern].sizeX / 2) return false;
-    if (a->posY - hbList[a->hbPattern].sizeY / 2 >= b->posY + hbList[b->hbPattern].sizeY / 2) return false;
-    if (a->posY + hbList[a->hbPattern].sizeY / 2 <= b->posY - hbList[b->hbPattern].sizeY / 2) return false;
+    Vector<double> interval = a->pos - b->pos;
+    if (interval.getLength() > hb[a->hbPattern].radius + hb[b->hbPattern].radius) return false;
+    Vector<double> ae[2], be[2];
+    Vector<double> nae[2], nbe[2];
+    double ra, rb;
+    nae[0].set(1.0, 0.0);
+    nae[1].set(0.0, 1.0);
+    nbe[0].set(1.0, 0.0);
+    nbe[1].set(0.0, 1.0);
+    for (int i = 0; i < 2; i++) {
+      nae[i].rotate(a->angle);
+      nbe[i].rotate(b->angle);
+      if (i == 0) {
+        ae[i] = nae[i] * hb[a->hbPattern].size.x * 0.5;
+        be[i] = nbe[i] * hb[b->hbPattern].size.x * 0.5;
+      }
+      else {
+        ae[i] = nae[i] * hb[a->hbPattern].size.y * 0.5;
+        be[i] = nbe[i] * hb[b->hbPattern].size.y * 0.5;
+      }
+    }
+    ra = hb[a->hbPattern].size.x * 0.5;
+    rb = std::abs(nae[0] * be[0]) + abs(nae[0] * be[1]);
+    if (abs(nae[0] * interval) > ra + rb) return false;
+    ra = hb[a->hbPattern].size.y * 0.5;
+    rb = std::abs(nae[1] * be[0]) + abs(nae[1] * be[1]);
+    if (abs(nae[1] * interval) > ra + rb) return false;
+    ra = std::abs(ae[0] * nbe[0]) + abs(ae[1] * nbe[0]);
+    rb = hb[b->hbPattern].size.x * 0.5;
+    if (abs(nbe[0] * interval) > ra + rb) return false;
+    ra = std::abs(ae[0] * nbe[1]) + abs(ae[1] * nbe[1]);
+    rb = hb[b->hbPattern].size.y * 0.5;
+    if (abs(nbe[1] * interval) > ra + rb) return false;
     return true;
   }
-  HitBox hbList[10];
+  HitBox hb[10];
   BaseObject *player;
   BaseObject *enemy[16];
   BaseObject *pBullet[32];
