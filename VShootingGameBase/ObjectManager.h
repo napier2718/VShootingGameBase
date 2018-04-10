@@ -3,6 +3,8 @@
 #include "Enemy.h"
 #include "Bullet.h"
 
+#define ENEMY_MAX_SIZE 128
+
 struct HitBox
 {
   Vector<double> size;
@@ -17,35 +19,45 @@ public:
     hb[1].size.set(4.0,  16.0);
     CalcRadius();
     player = new Player();
-    for (int i = 0; i < 16; i++) enemy[i] = new Enemy();
-    for (int i = 0; i < 32; i++) pBullet[i] = new Bullet();
-    for (int i = 0; i < 32; i++) eBullet[i] = new Bullet();
+    for (int i = 0; i < ENEMY_MAX_SIZE; i++) enemy[i] = new Enemy();
+    for (int i = 0; i < PBULLET_MAX_SIZE; i++) pBullet[i] = new Bullet();
+    for (int i = 0; i < EBULLET_MAX_SIZE; i++) eBullet[i] = new Bullet();
   }
   ~ObjectManager()
   {
     delete player;
-    for (int i = 0; i < 16; i++) delete enemy[i];
-    for (int i = 0; i < 32; i++) delete pBullet[i];
-    for (int i = 0; i < 32; i++) delete eBullet[i];
+    for (int i = 0; i < ENEMY_MAX_SIZE; i++) delete enemy[i];
+    for (int i = 0; i < PBULLET_MAX_SIZE; i++) delete pBullet[i];
+    for (int i = 0; i < EBULLET_MAX_SIZE; i++) delete eBullet[i];
   }
   void Exe(DrawManager *dm, int *area)
   {
     if (--spawnWait == 0) {
-      for (int i = 0; i < 16; i++) {
+      for (int i = 0; i < ENEMY_MAX_SIZE; i++) {
         if (!enemy[i]->IsExist()) {
-          dynamic_cast<Enemy*>(enemy[i])->Spawn(Vector<double>(100.0, 0.0), Vector<double>(0.0, 2.0), 5, 0);
+          dynamic_cast<Enemy*>(enemy[i])->Spawn(Vector<double>(150.0, 0.0), Vector<double>(0.0, 2.0), 5, 0);
+          break;
+        }
+      }
+      for (int i = 0; i < ENEMY_MAX_SIZE; i++) {
+        if (!enemy[i]->IsExist()) {
+          dynamic_cast<Enemy*>(enemy[i])->Spawn(Vector<double>(250.0, 0.0), Vector<double>(0.0, 2.0), 5, 0);
           break;
         }
       }
       spawnWait = 40;
     }
     player->Exe(dm, area, pBullet);
-    for (int i = 0; i < 16; i++) enemy[i]->Exe(dm, area, eBullet);
-    for (int i = 0; i < 32; i++) pBullet[i]->Exe(dm, area, pBullet);
-    for (int i = 0; i < 32; i++) eBullet[i]->Exe(dm, area, eBullet);
-    for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < ENEMY_MAX_SIZE; i++) enemy[i]->Exe(dm, area, eBullet);
+    for (int i = 0; i < PBULLET_MAX_SIZE; i++) pBullet[i]->Exe(dm, area, pBullet);
+    for (int i = 0; i < EBULLET_MAX_SIZE; i++) eBullet[i]->Exe(dm, area, eBullet);
+    for (int i = 0; i < ENEMY_MAX_SIZE; i++) {
       if (!enemy[i]->isExist) continue;
-      for (int j = 0; j < 32; j++) {
+      if (HitCheck(player, enemy[i])) {
+        player->Hit();
+        enemy[i]->Hit();
+      }
+      for (int j = 0; j < PBULLET_MAX_SIZE; j++) {
         if (!pBullet[j]->isExist) continue;
         if (HitCheck(enemy[i], pBullet[j])) {
           enemy[i]->Hit();
@@ -53,12 +65,19 @@ public:
         }
       }
     }
+    for (int i = 0; i < EBULLET_MAX_SIZE; i++) {
+      if (!eBullet[i]->isExist) continue;
+      if (HitCheck(player, eBullet[i])) {
+        player->Hit();
+        eBullet[i]->Hit();
+      }
+    }
   }
   void Draw(DrawManager *dm)
   {
-    for (int i = 0; i < 32; i++) pBullet[i]->Draw(dm);
-    for (int i = 0; i < 32; i++) eBullet[i]->Draw(dm);
-    for (int i = 0; i < 16; i++) enemy[i]->Draw(dm);
+    for (int i = 0; i < PBULLET_MAX_SIZE; i++) pBullet[i]->Draw(dm);
+    for (int i = 0; i < EBULLET_MAX_SIZE; i++) eBullet[i]->Draw(dm);
+    for (int i = 0; i < ENEMY_MAX_SIZE; i++) enemy[i]->Draw(dm);
     player->Draw(dm);
   }
 private:
@@ -107,8 +126,8 @@ private:
   }
   HitBox hb[10];
   BaseObject *player;
-  BaseObject *enemy[16];
-  BaseObject *pBullet[32];
-  BaseObject *eBullet[32];
+  BaseObject *enemy[ENEMY_MAX_SIZE];
+  BaseObject *pBullet[PBULLET_MAX_SIZE];
+  BaseObject *eBullet[EBULLET_MAX_SIZE];
   int spawnWait;
 };

@@ -12,5 +12,6 @@ public:
 private:
   Vector<double> vel;
   int gPattern;
+  int hp;
   int animeFrame;
 };

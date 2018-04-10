@@ -1,6 +1,9 @@
 #pragma once
 #include "BaseObject.h"
 
+#define PBULLET_MAX_SIZE 64
+#define EBULLET_MAX_SIZE 256
+
 class Bullet :public BaseObject
 {
 public:
