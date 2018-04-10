@@ -7,13 +7,9 @@ Player::Player() :BaseObject(), shotWait(0)
 {
   FILE *dataFile;
   fopen_s(&dataFile, "data\\player.data", "rb");
-  PlayerData data;
-  fread_s(&data, sizeof(PlayerData), sizeof(PlayerData), 1, dataFile);
+  dataFile = ReadPlayerData(dataFile);
   fclose(dataFile);
   isExist = true;
-  pos.set(data.posX, data.posY);
-  speed = data.speed;
-  shotWaitTime = data.shotWait;
 }
 void Player::Exe(DrawManager *dm, int *area, BaseObject **bList)
 {
@@ -25,11 +21,11 @@ void Player::Exe(DrawManager *dm, int *area, BaseObject **bList)
   if (keyBuffer[KEY_INPUT_RIGHT]) move.x++;
   if (keyBuffer[KEY_INPUT_LEFT])  move.x--;
   if (--shotWait < 0 && keyBuffer[KEY_INPUT_Z]) {
-    Shoot(bList, Vector<double>(pos.x, pos.y - 6.0), 0.0, Vector<double>(0.0, -8.0), 4, 1);
-    Shoot(bList, Vector<double>(pos.x - 2.0, pos.y - 6.0), -5.0, Vector<double>(-0.7, -8.0), 4, 1);
-    Shoot(bList, Vector<double>(pos.x + 2.0, pos.y - 6.0),  5.0, Vector<double>( 0.7, -8.0), 4, 1);
-    Shoot(bList, Vector<double>(pos.x - 4.0, pos.y - 6.0), -10.0, Vector<double>(-1.41, -8.0), 4, 1);
-    Shoot(bList, Vector<double>(pos.x + 4.0, pos.y - 6.0),  10.0, Vector<double>( 1.41, -8.0), 4, 1);
+    for (unsigned int i = 0; i < shotData.size(); i++)
+    {
+      Vector<double> bPos = pos + shotData[i].pos;
+      Shoot(bList, bPos, shotData[i].angle, shotData[i].v, 4, 1);
+    }
     shotWait = shotWaitTime;
   }
   gPattern = 0;
@@ -58,4 +54,23 @@ void Player::Shoot(BaseObject **bList, Vector<double> &p, const double &Angle, V
       break;
     }
   }
+}
+FILE *Player::ReadPlayerData(FILE *dataFile)
+{
+  PlayerData data;
+  fread_s(&data, sizeof(double) * 3, sizeof(double), 3, dataFile);
+  fread_s(&data.shotWait, sizeof(int), sizeof(int), 1, dataFile);
+  pos.set(data.posX, data.posY);
+  speed = data.speed;
+  shotWaitTime = data.shotWait;
+  int size;
+  fread_s(&size, sizeof(int), sizeof(int), 1, dataFile);
+  for (int i = 0; i < size; i++) {
+    BulletData bulletData;
+    fread_s(&bulletData.pos, sizeof(double) * 2, sizeof(double), 2, dataFile);
+    fread_s(&bulletData.v, sizeof(double) * 2, sizeof(double), 2, dataFile);
+    fread_s(&bulletData.angle, sizeof(double), sizeof(double), 1, dataFile);
+    shotData.push_back(bulletData);
+  }
+  return dataFile;
 }
