@@ -12,11 +12,11 @@ TitleScene::TitleScene() :select(0)
   FILE *dataFile;
   fopen_s(&dataFile, "data\\title.data", "rb");
   dataFile = LoadImages(gHandleList, dataFile);
+  dataFile = LoadColors(colorList, dataFile);
   dataFile = CreateFonts(fHandleList, dataFile);
   dataFile = ReadObjects(objectList, bgListSize, dataFile);
   dataFile = ReadLinks(linkList, dataFile);
   fclose(dataFile);
-  fColor = GetColor(0, 255, 128);
   bColor = GetColor(128, 128, 255);
 }
 TitleScene::~TitleScene()
@@ -66,6 +66,17 @@ FILE *TitleScene::LoadImages(vector<int> &gHandleList, FILE *dataFile)
   }
   return dataFile;
 }
+FILE *TitleScene::LoadColors(vector<unsigned int> &colorList, FILE *dataFile)
+{
+  int size;
+  fread_s(&size, sizeof(int), sizeof(int), 1, dataFile);
+  for (int i = 0; i < size; i++) {
+    unsigned int color;
+    fread_s(&color, sizeof(unsigned int), sizeof(unsigned int), 1, dataFile);
+    colorList.push_back(color);
+  }
+  return dataFile;
+}
 FILE *TitleScene::CreateFonts(vector<int> &fHandleList, FILE *dataFile)
 {
   int size, fontSize;
@@ -89,6 +100,7 @@ FILE *TitleScene::ReadObjects(vector<Object> &objectList, int &bgSize, FILE *dat
     fread_s(&object.type, sizeof(ObjectType), sizeof(ObjectType), 1, dataFile);
     fread_s(&object.posX, sizeof(int) * 5, sizeof(int), 5, dataFile);
     if (object.type == ObjectType::text) {
+      fread_s(&object.colorID, sizeof(int), sizeof(int), 1, dataFile);
       dataFile = ReadText(text, dataFile);
       object.text += text;
     }
@@ -118,7 +130,7 @@ void TitleScene::DrawObject(const Object &object) const
       gHandleList[object.id], true);
     break;
   case text:
-    DrawStringToHandle(object.posX, object.posY, object.text.c_str(), fColor, fHandleList[object.id]);
+    DrawStringToHandle(object.posX, object.posY, object.text.c_str(), colorList[object.colorID], fHandleList[object.id]);
     break;
   }
 }
