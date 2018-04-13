@@ -13,7 +13,7 @@ void Enemy::Exe(DrawManager *dm, int *area, BaseObject **bList)
 }
 void Enemy::Draw(DrawManager *dm)
 {
-  if (isExist) dm->Draw((int)pos.x, (int)pos.y, angle, gPattern, (animeFrame / 6) % 6);
+  if (isExist) dm->Draw((int)pos.x, (int)pos.y, angle, gPattern, animeFrame);
 }
 void Enemy::Hit()
 {

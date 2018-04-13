@@ -24,7 +24,7 @@ void Player::Exe(DrawManager *dm, int *area, BaseObject **bList)
     for (unsigned int i = 0; i < shotData.size(); i++)
     {
       Vector<double> bPos = pos + shotData[i].pos;
-      Shoot(bList, bPos, shotData[i].angle, shotData[i].v, 4, 1);
+      Shoot(bList, bPos, shotData[i].angle, shotData[i].v, 6, 1);
     }
     shotWait = shotWaitTime;
   }
