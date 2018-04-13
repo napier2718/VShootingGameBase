@@ -3,10 +3,10 @@
 
 #include "DxLib.h"
 
-Player::Player() :BaseObject(), shotWait(0)
+Player::Player(const char *dataFileName) :BaseObject(), shotWait(0)
 {
   FILE *dataFile;
-  fopen_s(&dataFile, "data\\player.data", "rb");
+  fopen_s(&dataFile, dataFileName, "rb");
   dataFile = ReadPlayerData(dataFile);
   fclose(dataFile);
   isExist = true;

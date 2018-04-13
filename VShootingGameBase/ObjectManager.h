@@ -10,18 +10,28 @@ struct HitBox
   Vector<double> size;
   double radius;
 };
+struct EnemyData
+{
+  Vector<double> pos;
+  int time, graphicID, patternID;
+};
 class ObjectManager
 {
 public:
-  ObjectManager() :spawnWait(1)
+  ObjectManager(const char *playerDataName, const char *stageDataName) :enemyDataP(0)
   {
     hb[0].size.set(32.0, 32.0);
     hb[1].size.set(4.0,  16.0);
     CalcRadius();
-    player = new Player();
+    player = new Player(playerDataName);
     for (int i = 0; i < ENEMY_MAX_SIZE; i++) enemy[i] = new Enemy();
     for (int i = 0; i < PBULLET_MAX_SIZE; i++) pBullet[i] = new Bullet();
     for (int i = 0; i < EBULLET_MAX_SIZE; i++) eBullet[i] = new Bullet();
+
+    FILE *dataFile;
+    fopen_s(&dataFile, stageDataName, "rb");
+    dataFile = ReadEnemyData(dataFile);
+    fclose(dataFile);
   }
   ~ObjectManager()
   {
@@ -29,23 +39,18 @@ public:
     for (int i = 0; i < ENEMY_MAX_SIZE; i++) delete enemy[i];
     for (int i = 0; i < PBULLET_MAX_SIZE; i++) delete pBullet[i];
     for (int i = 0; i < EBULLET_MAX_SIZE; i++) delete eBullet[i];
+    delete[] enemyData;
   }
-  void Exe(DrawManager *dm, int *area)
+  void Exe(DrawManager *dm, int *area, int stageTime)
   {
-    if (--spawnWait == 0) {
+    while (enemyDataP < enemyDataSize && enemyData[enemyDataP].time <= stageTime) {
       for (int i = 0; i < ENEMY_MAX_SIZE; i++) {
         if (!enemy[i]->IsExist()) {
-          dynamic_cast<Enemy*>(enemy[i])->Spawn(Vector<double>(150.0, 0.0), Vector<double>(0.0, 2.0), 5, 0);
+          dynamic_cast<Enemy*>(enemy[i])->Spawn(enemyData[enemyDataP].pos, Vector<double>(0.0, 1.0), enemyData[enemyDataP].graphicID, 0);
           break;
         }
       }
-      for (int i = 0; i < ENEMY_MAX_SIZE; i++) {
-        if (!enemy[i]->IsExist()) {
-          dynamic_cast<Enemy*>(enemy[i])->Spawn(Vector<double>(250.0, 0.0), Vector<double>(0.0, 2.0), 5, 0);
-          break;
-        }
-      }
-      spawnWait = 40;
+      enemyDataP++;
     }
     player->Exe(dm, area, pBullet);
     for (int i = 0; i < ENEMY_MAX_SIZE; i++) enemy[i]->Exe(dm, area, eBullet);
@@ -124,10 +129,21 @@ private:
     if (abs(nbe[1] * interval) > ra + rb) return false;
     return true;
   }
+  FILE *ReadEnemyData(FILE *dataFile)
+  {
+    fread_s(&enemyDataSize, sizeof(int), sizeof(int), 1, dataFile);
+    enemyData = new EnemyData[enemyDataSize];
+    for (int i = 0; i < enemyDataSize; i++) {
+      fread_s(&enemyData[i].pos, sizeof(double) * 2, sizeof(double), 2, dataFile);
+      fread_s(&enemyData[i].time, sizeof(int) * 3, sizeof(int), 3, dataFile);
+    }
+    return dataFile;
+  }
   HitBox hb[10];
   BaseObject *player;
   BaseObject *enemy[ENEMY_MAX_SIZE];
   BaseObject *pBullet[PBULLET_MAX_SIZE];
   BaseObject *eBullet[EBULLET_MAX_SIZE];
-  int spawnWait;
+  EnemyData *enemyData;
+  int enemyDataSize, enemyDataP;
 };

@@ -18,7 +18,7 @@ struct BulletData
 class Player :public BaseObject
 {
 public:
-  Player();
+  Player(const char *dataFileName);
   void Exe(DrawManager *dm, int *area, BaseObject **bList);
   void Draw(DrawManager *dm);
   void Hit();

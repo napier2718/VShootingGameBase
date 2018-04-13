@@ -2,10 +2,10 @@
 
 #include "DxLib.h"
 
-GameScene::GameScene()
+GameScene::GameScene() :stageTime(1)
 {
   gameui = new GameUI();
-  om = new ObjectManager();
+  om = new ObjectManager("data\\player.data", "data\\stage.data");
   dm = new DrawManager(gameui->GetArea());
 }
 GameScene::~GameScene()
@@ -16,7 +16,8 @@ GameScene::~GameScene()
 }
 Scene GameScene::Exe()
 {
-  om->Exe(dm, gameui->GetArea());
+  om->Exe(dm, gameui->GetArea(), stageTime);
+  stageTime++;
   return preserve;
 }
 void GameScene::Draw()

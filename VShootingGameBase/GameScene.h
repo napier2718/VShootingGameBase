@@ -15,4 +15,5 @@ private:
   DrawManager *dm;
   GameUI *gameui;
   ObjectManager *om;
+  int stageTime;
 };
