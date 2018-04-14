@@ -16,7 +16,7 @@ class DrawManager
 public:
   DrawManager(const char *dataFileName, int *Area);
   ~DrawManager();
-  void Draw(int posX, int posY, double &angle, int pattern, int animeFrame);
+  void Draw(int posX, int posY, double &angle, int pattern, int animeFrame, bool isHit = false);
   Vector<int> &GetDSize(int pattern) { return dPattern[pattern].dSize; }
 private:
   void CalcRate(DrawPattern&);

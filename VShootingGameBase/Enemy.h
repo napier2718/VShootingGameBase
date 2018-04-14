@@ -14,4 +14,5 @@ private:
   int gPattern;
   int hp;
   int animeFrame;
+  int hitCounter;
 };

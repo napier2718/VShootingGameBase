@@ -16,9 +16,15 @@ DrawManager::~DrawManager()
 {
   for (int i = 0; i < 48; i++) DeleteGraph(gHandle[i]);
 }
-void DrawManager::Draw(int posX, int posY, double &angle, int pattern, int animeFrame)
+void DrawManager::Draw(int posX, int posY, double &angle, int pattern, int animeFrame, bool isHit)
 {
+  if (isHit) {
+    SetDrawBlendMode(DX_BLENDMODE_INVSRC, 255);
+    DrawRotaGraph(posX + area[0] - 1, posY + area[1] - 1, dPattern[pattern].rate, angle * M_PI / 180.0, gHandle[dPattern[pattern].gHandleID + (dPattern[pattern].enableAnimation ? (animeFrame / dPattern[pattern].aWaitFrame) % dPattern[pattern].aFrame : 0)], true, false);
+    SetDrawBlendMode(DX_BLENDMODE_ADD, 255);
+  }
   DrawRotaGraph(posX + area[0] - 1, posY + area[1] - 1, dPattern[pattern].rate, angle * M_PI / 180.0, gHandle[dPattern[pattern].gHandleID + (dPattern[pattern].enableAnimation? (animeFrame / dPattern[pattern].aWaitFrame) % dPattern[pattern].aFrame : 0)], true, false);
+  if (isHit) SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
 }
 void DrawManager::CalcRate(DrawPattern &dPattern)
 {

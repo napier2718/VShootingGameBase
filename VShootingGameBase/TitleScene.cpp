@@ -1,7 +1,7 @@
 #include "TitleScene.h"
 
-#include "DxLib.h"
 #include <cstdio>
+#include "DxLib.h"
 
 using namespace std;
 

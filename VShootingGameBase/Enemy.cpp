@@ -13,12 +13,15 @@ void Enemy::Exe(DrawManager *dm, int *area, BaseObject **bList)
 }
 void Enemy::Draw(DrawManager *dm)
 {
-  if (isExist) dm->Draw((int)pos.x, (int)pos.y, angle, gPattern, animeFrame);
+  if (isExist) dm->Draw((int)pos.x, (int)pos.y, angle, gPattern, animeFrame, (hitCounter-- > 0 ? true : false));
 }
 void Enemy::Hit()
 {
   hp--;
-  if(hp <= 0) isExist = false;
+  hitCounter = 2;
+  if (hp <= 0) {
+    isExist = false;
+  }
 }
 void Enemy::Spawn(Vector<double> &p, Vector<double> &v, int gP, int hbP)
 {
@@ -29,4 +32,5 @@ void Enemy::Spawn(Vector<double> &p, Vector<double> &v, int gP, int hbP)
   hbPattern = hbP;
   hp = 6;
   animeFrame = 0;
+  hitCounter = 0;
 }
