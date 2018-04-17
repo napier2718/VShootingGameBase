@@ -18,17 +18,18 @@ struct EnemyData
 class ObjectManager
 {
 public:
-  ObjectManager(const char *playerDataName, const char *stageDataName) :enemyDataP(0)
+  ObjectManager(const char *hitboxDataName, const char *playerDataName, const char *stageDataName) :enemyDataP(0)
   {
-    hb[0].size.set(32.0, 32.0);
-    hb[1].size.set(4.0,  16.0);
-    CalcRadius();
+    FILE *dataFile;
+    fopen_s(&dataFile, hitboxDataName, "rb");
+    dataFile = ReadHitBoxData(dataFile);
+    fclose(dataFile);
+
     player = new Player(playerDataName);
     for (int i = 0; i < ENEMY_MAX_SIZE; i++) enemy[i] = new Enemy();
     for (int i = 0; i < PBULLET_MAX_SIZE; i++) pBullet[i] = new Bullet();
     for (int i = 0; i < EBULLET_MAX_SIZE; i++) eBullet[i] = new Bullet();
 
-    FILE *dataFile;
     fopen_s(&dataFile, stageDataName, "rb");
     dataFile = ReadEnemyData(dataFile);
     fclose(dataFile);
@@ -39,7 +40,7 @@ public:
     for (int i = 0; i < ENEMY_MAX_SIZE; i++) delete enemy[i];
     for (int i = 0; i < PBULLET_MAX_SIZE; i++) delete pBullet[i];
     for (int i = 0; i < EBULLET_MAX_SIZE; i++) delete eBullet[i];
-    delete[] enemyData;
+    delete[] hitboxData, enemyData;
   }
   void Exe(DrawManager *dm, int *area, int stageTime)
   {
@@ -86,16 +87,10 @@ public:
     player->Draw(dm);
   }
 private:
-  void CalcRadius()
-  {
-    for (int i = 0; i < 10; i++) {
-      hb[i].radius = (hb[i].size * 0.5).getLength();
-    }
-  }
   bool HitCheck(BaseObject *a, BaseObject *b)
   {
     Vector<double> interval = a->pos - b->pos;
-    if (interval.getLength() > hb[a->hbPattern].radius + hb[b->hbPattern].radius) return false;
+    if (interval.getLength() > hitboxData[a->hbPattern].radius + hitboxData[b->hbPattern].radius) return false;
     Vector<double> ae[2], be[2];
     Vector<double> nae[2], nbe[2];
     double ra, rb;
@@ -107,27 +102,37 @@ private:
       nae[i].rotate(a->angle);
       nbe[i].rotate(b->angle);
       if (i == 0) {
-        ae[i] = nae[i] * hb[a->hbPattern].size.x * 0.5;
-        be[i] = nbe[i] * hb[b->hbPattern].size.x * 0.5;
+        ae[i] = nae[i] * hitboxData[a->hbPattern].size.x * 0.5;
+        be[i] = nbe[i] * hitboxData[b->hbPattern].size.x * 0.5;
       }
       else {
-        ae[i] = nae[i] * hb[a->hbPattern].size.y * 0.5;
-        be[i] = nbe[i] * hb[b->hbPattern].size.y * 0.5;
+        ae[i] = nae[i] * hitboxData[a->hbPattern].size.y * 0.5;
+        be[i] = nbe[i] * hitboxData[b->hbPattern].size.y * 0.5;
       }
     }
-    ra = hb[a->hbPattern].size.x * 0.5;
+    ra = hitboxData[a->hbPattern].size.x * 0.5;
     rb = std::abs(nae[0] * be[0]) + abs(nae[0] * be[1]);
     if (abs(nae[0] * interval) > ra + rb) return false;
-    ra = hb[a->hbPattern].size.y * 0.5;
+    ra = hitboxData[a->hbPattern].size.y * 0.5;
     rb = std::abs(nae[1] * be[0]) + abs(nae[1] * be[1]);
     if (abs(nae[1] * interval) > ra + rb) return false;
     ra = std::abs(ae[0] * nbe[0]) + abs(ae[1] * nbe[0]);
-    rb = hb[b->hbPattern].size.x * 0.5;
+    rb = hitboxData[b->hbPattern].size.x * 0.5;
     if (abs(nbe[0] * interval) > ra + rb) return false;
     ra = std::abs(ae[0] * nbe[1]) + abs(ae[1] * nbe[1]);
-    rb = hb[b->hbPattern].size.y * 0.5;
+    rb = hitboxData[b->hbPattern].size.y * 0.5;
     if (abs(nbe[1] * interval) > ra + rb) return false;
     return true;
+  }
+  FILE *ReadHitBoxData(FILE *dataFile)
+  {
+    fread_s(&hitboxDataSize, sizeof(int), sizeof(int), 1, dataFile);
+    hitboxData = new HitBox[hitboxDataSize];
+    for (int i = 0; i < hitboxDataSize; i++) {
+      fread_s(&hitboxData[i], sizeof(double) * 2, sizeof(double), 2, dataFile);
+      hitboxData[i].radius = (hitboxData[i].size * 0.5).getLength();
+    }
+    return dataFile;
   }
   FILE *ReadEnemyData(FILE *dataFile)
   {
@@ -139,11 +144,12 @@ private:
     }
     return dataFile;
   }
-  HitBox hb[10];
   BaseObject *player;
   BaseObject *enemy[ENEMY_MAX_SIZE];
   BaseObject *pBullet[PBULLET_MAX_SIZE];
   BaseObject *eBullet[EBULLET_MAX_SIZE];
+  HitBox *hitboxData;
+  int hitboxDataSize;
   EnemyData *enemyData;
   int enemyDataSize, enemyDataP;
 };
