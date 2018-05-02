@@ -24,26 +24,26 @@ void Player::Exe(DrawManager *dm, int *area, BaseObject **bList)
     for (unsigned int i = 0; i < shotData.size(); i++)
     {
       Vector<double> bPos = pos + shotData[i].pos;
-      Shoot(bList, bPos, shotData[i].angle, shotData[i].v, 7, 2);
+      Shoot(bList, bPos, shotData[i].angle, shotData[i].v, shotData[i].graphicID, shotData[i].hitboxID);
     }
     shotWait = shotWaitTime;
   }
-  gPattern = 0;
-  if (move.y > 0.0) gPattern = 3;
+  graphicID = gStartID;
+  if (move.y > 0.0) graphicID = gStartID + 3;
   else {
-    if (move.x > 0.0) gPattern = 1;
-    else if (move.x < 0.0) gPattern = 2;
+    if (move.x > 0.0) graphicID = gStartID + 1;
+    else if (move.x < 0.0) graphicID = gStartID + 2;
   }
   if (move.getLengthSQ() > 1.0) pos += move * (speed * M_SQRT1_2);
   else pos += move * speed;
-  if (pos.x < dm->GetDSize(gPattern).x / 2) pos.x = (double)(dm->GetDSize(gPattern).x / 2);
-  else if (pos.x > area[2] - dm->GetDSize(gPattern).x / 2) pos.x = (double)(area[2] - dm->GetDSize(gPattern).x / 2);
-  if (pos.y < dm->GetDSize(gPattern).y / 2) pos.y = (double)(dm->GetDSize(gPattern).y / 2);
-  else if (pos.y > area[3] - dm->GetDSize(gPattern).y / 2) pos.y = (double)(area[3] - dm->GetDSize(gPattern).y / 2);
+  if (pos.x < dm->GetDSize(graphicID).x / 2) pos.x = (double)(dm->GetDSize(graphicID).x / 2);
+  else if (pos.x > area[2] - dm->GetDSize(graphicID).x / 2) pos.x = (double)(area[2] - dm->GetDSize(graphicID).x / 2);
+  if (pos.y < dm->GetDSize(graphicID).y / 2) pos.y = (double)(dm->GetDSize(graphicID).y / 2);
+  else if (pos.y > area[3] - dm->GetDSize(graphicID).y / 2) pos.y = (double)(area[3] - dm->GetDSize(graphicID).y / 2);
 }
 void Player::Draw(DrawManager *dm)
 {
-  dm->Draw((int)pos.x, (int)pos.y, angle, gPattern, 0);
+  dm->Draw((int)pos.x, (int)pos.y, angle, graphicID, 0);
 }
 void Player::Hit() { }
 void Player::Shoot(BaseObject **bList, Vector<double> &p, const double &Angle, Vector<double> &v, int gP, int hbP)
@@ -57,18 +57,19 @@ void Player::Shoot(BaseObject **bList, Vector<double> &p, const double &Angle, V
 }
 FILE *Player::ReadPlayerData(FILE *dataFile)
 {
-  PlayerData data;
-  fread_s(&data, sizeof(double) * 3, sizeof(double), 3, dataFile);
-  fread_s(&data.shotWait, sizeof(int), sizeof(int), 1, dataFile);
-  pos.set(data.posX, data.posY);
-  speed = data.speed;
-  shotWaitTime = data.shotWait;
+  fread_s(&pos, sizeof(double) * 2, sizeof(double), 2, dataFile);
+  fread_s(&speed, sizeof(double), sizeof(double), 1, dataFile);
+  fread_s(&gStartID, sizeof(int), sizeof(int), 1, dataFile);
+  fread_s(&shotWaitTime, sizeof(int), sizeof(int), 1, dataFile);
+  graphicID = gStartID;
   int size;
   fread_s(&size, sizeof(int), sizeof(int), 1, dataFile);
   for (int i = 0; i < size; i++) {
     BulletData bulletData;
     fread_s(&bulletData.pos, sizeof(double) * 2, sizeof(double), 2, dataFile);
     fread_s(&bulletData.v, sizeof(double) * 2, sizeof(double), 2, dataFile);
+    fread_s(&bulletData.graphicID, sizeof(int), sizeof(int), 1, dataFile);
+    fread_s(&bulletData.hitboxID, sizeof(int), sizeof(int), 1, dataFile);
     fread_s(&bulletData.angle, sizeof(double), sizeof(double), 1, dataFile);
     shotData.push_back(bulletData);
   }

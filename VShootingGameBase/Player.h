@@ -3,16 +3,11 @@
 
 #include <vector>
 
-struct PlayerData
-{
-  double posX, posY;
-  double speed;
-  int shotWait;
-};
 struct BulletData
 {
   Vector<double> pos;
   Vector<double> v;
+  int graphicID, hitboxID;
   double angle;
 };
 class Player :public BaseObject
@@ -26,7 +21,7 @@ private:
   void Shoot(BaseObject**, Vector<double>&, const double&, Vector<double>&, int, int);
   FILE *ReadPlayerData(FILE *);
   double speed;
-  int gPattern;
+  int gStartID, graphicID;
   int shotWait, shotWaitTime;
   std::vector<BulletData> shotData;
 };
