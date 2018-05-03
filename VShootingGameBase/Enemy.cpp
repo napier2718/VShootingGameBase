@@ -5,15 +5,16 @@ void Enemy::Exe(DrawManager *dm, int *area, BaseObject **bList)
   if (isExist) {
     pos += vel;
     animeFrame++;
-    if (pos.x < -dm->GetDSize(gPattern).x) isExist = false;
-    else if (pos.x > area[2] + dm->GetDSize(gPattern).x) isExist = false;
-    if (pos.y < -dm->GetDSize(gPattern).y) isExist = false;
-    else if (pos.y > area[3] + dm->GetDSize(gPattern).y) isExist = false;
+    if (pos.x < -dm->GetDSize(graphicID).x) isExist = false;
+    else if (pos.x > area[2] + dm->GetDSize(graphicID).x) isExist = false;
+    if (pos.y < -dm->GetDSize(graphicID).y) isExist = false;
+    else if (pos.y > area[3] + dm->GetDSize(graphicID).y) isExist = false;
+    hitboxID = dm->GetHitBoxID(graphicID);
   }
 }
 void Enemy::Draw(DrawManager *dm)
 {
-  if (isExist) dm->Draw((int)pos.x, (int)pos.y, angle, gPattern, animeFrame, (hitCounter-- > 0 ? true : false));
+  if (isExist) dm->Draw((int)pos.x, (int)pos.y, angle, graphicID, animeFrame, (hitCounter-- > 0 ? true : false));
 }
 void Enemy::Hit()
 {
@@ -23,13 +24,12 @@ void Enemy::Hit()
     isExist = false;
   }
 }
-void Enemy::Spawn(Vector<double> &p, Vector<double> &v, int gP, int hbP)
+void Enemy::Spawn(Vector<double> &p, Vector<double> &v, int gID)
 {
   isExist = true;
   pos = p;
+  graphicID = gID;
   vel = v;
-  gPattern = gP;
-  hbPattern = hbP;
   hp = 6;
   animeFrame = 0;
   hitCounter = 0;

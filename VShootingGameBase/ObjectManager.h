@@ -47,7 +47,7 @@ public:
     while (enemyDataP < enemyDataSize && enemyData[enemyDataP].time <= stageTime) {
       for (int i = 0; i < ENEMY_MAX_SIZE; i++) {
         if (!enemy[i]->IsExist()) {
-          dynamic_cast<Enemy*>(enemy[i])->Spawn(enemyData[enemyDataP].pos, Vector<double>(0.0, 1.0), enemyData[enemyDataP].graphicID, 0);
+          dynamic_cast<Enemy*>(enemy[i])->Spawn(enemyData[enemyDataP].pos, Vector<double>(0.0, 1.0), enemyData[enemyDataP].graphicID);
           break;
         }
       }
@@ -90,7 +90,7 @@ private:
   bool HitCheck(BaseObject *a, BaseObject *b)
   {
     Vector<double> interval = a->pos - b->pos;
-    if (interval.getLength() > hitboxData[a->hbPattern].radius + hitboxData[b->hbPattern].radius) return false;
+    if (interval.getLength() > hitboxData[a->hitboxID].radius + hitboxData[b->hitboxID].radius) return false;
     Vector<double> ae[2], be[2];
     Vector<double> nae[2], nbe[2];
     double ra, rb;
@@ -102,25 +102,25 @@ private:
       nae[i].rotate(a->angle);
       nbe[i].rotate(b->angle);
       if (i == 0) {
-        ae[i] = nae[i] * hitboxData[a->hbPattern].size.x * 0.5;
-        be[i] = nbe[i] * hitboxData[b->hbPattern].size.x * 0.5;
+        ae[i] = nae[i] * hitboxData[a->hitboxID].size.x * 0.5;
+        be[i] = nbe[i] * hitboxData[b->hitboxID].size.x * 0.5;
       }
       else {
-        ae[i] = nae[i] * hitboxData[a->hbPattern].size.y * 0.5;
-        be[i] = nbe[i] * hitboxData[b->hbPattern].size.y * 0.5;
+        ae[i] = nae[i] * hitboxData[a->hitboxID].size.y * 0.5;
+        be[i] = nbe[i] * hitboxData[b->hitboxID].size.y * 0.5;
       }
     }
-    ra = hitboxData[a->hbPattern].size.x * 0.5;
+    ra = hitboxData[a->hitboxID].size.x * 0.5;
     rb = std::abs(nae[0] * be[0]) + abs(nae[0] * be[1]);
     if (abs(nae[0] * interval) > ra + rb) return false;
-    ra = hitboxData[a->hbPattern].size.y * 0.5;
+    ra = hitboxData[a->hitboxID].size.y * 0.5;
     rb = std::abs(nae[1] * be[0]) + abs(nae[1] * be[1]);
     if (abs(nae[1] * interval) > ra + rb) return false;
     ra = std::abs(ae[0] * nbe[0]) + abs(ae[1] * nbe[0]);
-    rb = hitboxData[b->hbPattern].size.x * 0.5;
+    rb = hitboxData[b->hitboxID].size.x * 0.5;
     if (abs(nbe[0] * interval) > ra + rb) return false;
     ra = std::abs(ae[0] * nbe[1]) + abs(ae[1] * nbe[1]);
-    rb = hitboxData[b->hbPattern].size.y * 0.5;
+    rb = hitboxData[b->hitboxID].size.y * 0.5;
     if (abs(nbe[1] * interval) > ra + rb) return false;
     return true;
   }

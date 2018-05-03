@@ -8,10 +8,9 @@ public:
   void Exe(DrawManager *dm, int *area, BaseObject **bList);
   void Draw(DrawManager *dm);
   void Hit();
-  void Spawn(Vector<double> &p, Vector<double> &v, int gP, int hbP);
+  void Spawn(Vector<double> &p, Vector<double> &v, int gID);
 private:
   Vector<double> vel;
-  int gPattern;
   int hp;
   int animeFrame;
   int hitCounter;

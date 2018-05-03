@@ -3,10 +3,11 @@
 
 #include <cstdio>
 
-struct DrawPattern
+struct Graphic
 {
   int gHandleID;
   Vector<int> dSize;
+  int hitboxID;
   double rate;
   int aFrame, aWaitFrame;
   bool enableAnimation;
@@ -16,14 +17,15 @@ class DrawManager
 public:
   DrawManager(const char *dataFileName, int *Area);
   ~DrawManager();
-  void Draw(int posX, int posY, double &angle, int pattern, int animeFrame, bool isHit = false);
-  Vector<int> &GetDSize(int pattern) { return dPattern[pattern].dSize; }
+  void Draw(int posX, int posY, double &angle, int graphicID, int animeFrame, bool isHit = false);
+  Vector<int> &GetDSize(int graphicID) { return graphicList[graphicID].dSize; }
+  int GetHitBoxID(int graphicID) { return graphicList[graphicID].hitboxID; }
 private:
-  void CalcRate(DrawPattern&);
+  void CalcRate(Graphic&);
   FILE *ReadText(char*, FILE*);
   FILE *LoadImages(FILE*);
   FILE *ReadGraphicData(FILE*);
   int *area;
-  DrawPattern dPattern[10];
+  Graphic graphicList[10];
   int gHandle[100];
 };

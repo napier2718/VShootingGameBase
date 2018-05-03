@@ -16,21 +16,21 @@ DrawManager::~DrawManager()
 {
   for (int i = 0; i < 48; i++) DeleteGraph(gHandle[i]);
 }
-void DrawManager::Draw(int posX, int posY, double &angle, int pattern, int animeFrame, bool isHit)
+void DrawManager::Draw(int posX, int posY, double &angle, int graphicID, int animeFrame, bool isHit)
 {
   if (isHit) {
     SetDrawBlendMode(DX_BLENDMODE_INVSRC, 255);
-    DrawRotaGraph(posX + area[0] - 1, posY + area[1] - 1, dPattern[pattern].rate, angle * M_PI / 180.0, gHandle[dPattern[pattern].gHandleID + (dPattern[pattern].enableAnimation ? (animeFrame / dPattern[pattern].aWaitFrame) % dPattern[pattern].aFrame : 0)], true, false);
+    DrawRotaGraph(posX + area[0] - 1, posY + area[1] - 1, graphicList[graphicID].rate, angle * M_PI / 180.0, gHandle[graphicList[graphicID].gHandleID + (graphicList[graphicID].enableAnimation ? (animeFrame / graphicList[graphicID].aWaitFrame) % graphicList[graphicID].aFrame : 0)], true, false);
     SetDrawBlendMode(DX_BLENDMODE_ADD, 255);
   }
-  DrawRotaGraph(posX + area[0] - 1, posY + area[1] - 1, dPattern[pattern].rate, angle * M_PI / 180.0, gHandle[dPattern[pattern].gHandleID + (dPattern[pattern].enableAnimation? (animeFrame / dPattern[pattern].aWaitFrame) % dPattern[pattern].aFrame : 0)], true, false);
+  DrawRotaGraph(posX + area[0] - 1, posY + area[1] - 1, graphicList[graphicID].rate, angle * M_PI / 180.0, gHandle[graphicList[graphicID].gHandleID + (graphicList[graphicID].enableAnimation? (animeFrame / graphicList[graphicID].aWaitFrame) % graphicList[graphicID].aFrame : 0)], true, false);
   if (isHit) SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
 }
-void DrawManager::CalcRate(DrawPattern &dPattern)
+void DrawManager::CalcRate(Graphic &graphic)
 {
   Vector<int> size;
-  GetGraphSize(gHandle[dPattern.gHandleID], &size.x, &size.y);
-  dPattern.rate = (double)dPattern.dSize.x / (double)size.x;
+  GetGraphSize(gHandle[graphic.gHandleID], &size.x, &size.y);
+  graphic.rate = (double)graphic.dSize.x / (double)size.x;
 }
 FILE *DrawManager::ReadText(char *text, FILE *dataFile)
 {
@@ -60,12 +60,13 @@ FILE *DrawManager::ReadGraphicData(FILE *dataFile)
   int size;
   fread_s(&size, sizeof(int), sizeof(int), 1, dataFile);
   for (int i = 0; i < size; i++) {
-    fread_s(&dPattern[i].gHandleID, sizeof(int), sizeof(int), 1, dataFile);
-    fread_s(&dPattern[i].dSize, sizeof(int) * 2, sizeof(int), 2, dataFile);
-    fread_s(&dPattern[i].enableAnimation, sizeof(bool), sizeof(bool), 1, dataFile);
-    fread_s(&dPattern[i].aFrame, sizeof(int) * 2, sizeof(int), 2, dataFile);
-    if (!dPattern[i].enableAnimation) dPattern[i].aFrame = dPattern[i].aWaitFrame = 1;
-    CalcRate(dPattern[i]);
+    fread_s(&graphicList[i].gHandleID, sizeof(int), sizeof(int), 1, dataFile);
+    fread_s(&graphicList[i].dSize, sizeof(int) * 2, sizeof(int), 2, dataFile);
+    fread_s(&graphicList[i].hitboxID, sizeof(int), sizeof(int), 1, dataFile);
+    fread_s(&graphicList[i].enableAnimation, sizeof(bool), sizeof(bool), 1, dataFile);
+    fread_s(&graphicList[i].aFrame, sizeof(int) * 2, sizeof(int), 2, dataFile);
+    if (!graphicList[i].enableAnimation) graphicList[i].aFrame = graphicList[i].aWaitFrame = 1;
+    CalcRate(graphicList[i]);
   }
   return dataFile;
 }

@@ -7,7 +7,7 @@ struct BulletData
 {
   Vector<double> pos;
   Vector<double> v;
-  int graphicID, hitboxID;
+  int graphicID;
   double angle;
 };
 class Player :public BaseObject
@@ -18,10 +18,10 @@ public:
   void Draw(DrawManager *dm);
   void Hit();
 private:
-  void Shoot(BaseObject**, Vector<double>&, const double&, Vector<double>&, int, int);
+  void Shoot(BaseObject**, Vector<double>&, const double&, Vector<double>&, int);
   FILE *ReadPlayerData(FILE *);
   double speed;
-  int gStartID, graphicID;
+  int gStartID;
   int shotWait, shotWaitTime;
   std::vector<BulletData> shotData;
 };
