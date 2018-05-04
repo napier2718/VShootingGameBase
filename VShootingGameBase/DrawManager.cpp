@@ -62,9 +62,8 @@ FILE *DrawManager::ReadGraphicData(FILE *dataFile)
   fread_s(&graphicListSize, sizeof(int), sizeof(int), 1, dataFile);
   graphicList = new Graphic[graphicListSize];
   for (int i = 0; i < graphicListSize; i++) {
-    fread_s(&graphicList[i].gHandleID, sizeof(int), sizeof(int), 1, dataFile);
+    fread_s(&graphicList[i].gHandleID, sizeof(int) * 2, sizeof(int), 2, dataFile);
     fread_s(&graphicList[i].dSize, sizeof(int) * 2, sizeof(int), 2, dataFile);
-    fread_s(&graphicList[i].hitboxID, sizeof(int), sizeof(int), 1, dataFile);
     fread_s(&graphicList[i].enableAnimation, sizeof(bool), sizeof(bool), 1, dataFile);
     fread_s(&graphicList[i].aFrame, sizeof(int) * 2, sizeof(int), 2, dataFile);
     if (!graphicList[i].enableAnimation) graphicList[i].aFrame = graphicList[i].aWaitFrame = 1;

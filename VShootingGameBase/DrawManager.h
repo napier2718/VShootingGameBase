@@ -5,12 +5,11 @@
 
 struct Graphic
 {
-  int gHandleID;
+  int gHandleID, hitboxID;
   Vector<int> dSize;
-  int hitboxID;
   double rate;
-  int aFrame, aWaitFrame;
   bool enableAnimation;
+  int aFrame, aWaitFrame;
 };
 class DrawManager
 {

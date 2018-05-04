@@ -3,9 +3,8 @@
 
 struct BulletData
 {
-  Vector<double> pos;
-  Vector<double> v;
   int graphicID;
+  Vector<double> pos, v;
   double angle;
 };
 class Player :public BaseObject
@@ -19,8 +18,8 @@ public:
 private:
   void Shoot(BaseObject**, Vector<double>&, const double&, Vector<double>&, int);
   FILE *ReadPlayerData(FILE *);
-  double speed;
   int gStartID;
+  double speed;
   int shotWait, shotWaitTime;
   BulletData *shotData;
   int shotDataSize;

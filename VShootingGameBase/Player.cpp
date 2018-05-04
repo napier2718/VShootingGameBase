@@ -58,17 +58,17 @@ void Player::Shoot(BaseObject **bList, Vector<double> &p, const double &Angle, V
 }
 FILE *Player::ReadPlayerData(FILE *dataFile)
 {
+  fread_s(&gStartID, sizeof(int), sizeof(int), 1, dataFile);
   fread_s(&pos, sizeof(double) * 2, sizeof(double), 2, dataFile);
   fread_s(&speed, sizeof(double), sizeof(double), 1, dataFile);
-  fread_s(&gStartID, sizeof(int), sizeof(int), 1, dataFile);
   fread_s(&shotWaitTime, sizeof(int), sizeof(int), 1, dataFile);
   graphicID = gStartID;
   fread_s(&shotDataSize, sizeof(int), sizeof(int), 1, dataFile);
   shotData = new BulletData[shotDataSize];
   for (int i = 0; i < shotDataSize; i++) {
+    fread_s(&shotData[i].graphicID, sizeof(int), sizeof(int), 1, dataFile);
     fread_s(&shotData[i].pos, sizeof(double) * 2, sizeof(double), 2, dataFile);
     fread_s(&shotData[i].v, sizeof(double) * 2, sizeof(double), 2, dataFile);
-    fread_s(&shotData[i].graphicID, sizeof(int), sizeof(int), 1, dataFile);
     fread_s(&shotData[i].angle, sizeof(double), sizeof(double), 1, dataFile);
   }
   return dataFile;

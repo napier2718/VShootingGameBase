@@ -12,8 +12,9 @@ struct HitBox
 };
 struct EnemyData
 {
+  int time, graphicID;
   Vector<double> pos;
-  int time, graphicID, patternID;
+  int patternID;
 };
 class ObjectManager
 {
@@ -141,8 +142,9 @@ private:
     fread_s(&enemyDataSize, sizeof(int), sizeof(int), 1, dataFile);
     enemyData = new EnemyData[enemyDataSize];
     for (int i = 0; i < enemyDataSize; i++) {
+      fread_s(&enemyData[i].time, sizeof(int) * 2, sizeof(int), 2, dataFile);
       fread_s(&enemyData[i].pos, sizeof(double) * 2, sizeof(double), 2, dataFile);
-      fread_s(&enemyData[i].time, sizeof(int) * 3, sizeof(int), 3, dataFile);
+      fread_s(&enemyData[i].patternID, sizeof(int), sizeof(int), 1, dataFile);
     }
     return dataFile;
   }
