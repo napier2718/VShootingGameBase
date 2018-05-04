@@ -14,7 +14,8 @@ DrawManager::DrawManager(const char *dataFileName, int *Area) :area(Area)
 }
 DrawManager::~DrawManager()
 {
-  for (int i = 0; i < 48; i++) DeleteGraph(gHandle[i]);
+  for (int i = 0; i < gHandleSize; i++) DeleteGraph(gHandle[i]);
+  delete[] graphicList;
 }
 void DrawManager::Draw(int posX, int posY, double &angle, int graphicID, int animeFrame, bool isHit)
 {
@@ -53,13 +54,14 @@ FILE *DrawManager::LoadImages(FILE *dataFile)
     LoadDivGraph(filePath, div.x*div.y, div.x, div.y, gSize.x, gSize.y, gHandle + offset);
     offset += div.x*div.y;
   }
+  gHandleSize = offset;
   return dataFile;
 }
 FILE *DrawManager::ReadGraphicData(FILE *dataFile)
 {
-  int size;
-  fread_s(&size, sizeof(int), sizeof(int), 1, dataFile);
-  for (int i = 0; i < size; i++) {
+  fread_s(&graphicListSize, sizeof(int), sizeof(int), 1, dataFile);
+  graphicList = new Graphic[graphicListSize];
+  for (int i = 0; i < graphicListSize; i++) {
     fread_s(&graphicList[i].gHandleID, sizeof(int), sizeof(int), 1, dataFile);
     fread_s(&graphicList[i].dSize, sizeof(int) * 2, sizeof(int), 2, dataFile);
     fread_s(&graphicList[i].hitboxID, sizeof(int), sizeof(int), 1, dataFile);

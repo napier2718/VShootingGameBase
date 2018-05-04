@@ -5,7 +5,7 @@
 GameScene::GameScene() :stageTime(1)
 {
   gameui = new GameUI();
-  om = new ObjectManager("data\\hitbox.data", "data\\player.data", "data\\stage.data");
+  om = new ObjectManager("data\\hitbox.data", "data\\player.data", "data\\enemyPattern.data", "data\\stage.data");
   dm = new DrawManager("data\\graphic.data", gameui->GetArea());
 }
 GameScene::~GameScene()

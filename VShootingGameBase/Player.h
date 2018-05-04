@@ -1,8 +1,6 @@
 #pragma once
 #include "BaseObject.h"
 
-#include <vector>
-
 struct BulletData
 {
   Vector<double> pos;
@@ -14,6 +12,7 @@ class Player :public BaseObject
 {
 public:
   Player(const char *dataFileName);
+  ~Player() { delete[] shotData; }
   void Exe(DrawManager *dm, int *area, BaseObject **bList);
   void Draw(DrawManager *dm);
   void Hit();
@@ -23,5 +22,6 @@ private:
   double speed;
   int gStartID;
   int shotWait, shotWaitTime;
-  std::vector<BulletData> shotData;
+  BulletData *shotData;
+  int shotDataSize;
 };

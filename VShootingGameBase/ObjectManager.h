@@ -18,7 +18,7 @@ struct EnemyData
 class ObjectManager
 {
 public:
-  ObjectManager(const char *hitboxDataName, const char *playerDataName, const char *stageDataName) :enemyDataP(0)
+  ObjectManager(const char *hitboxDataName, const char *playerDataName, const char *ePatternDataName, const char *stageDataName) :enemyDataP(0)
   {
     FILE *dataFile;
     fopen_s(&dataFile, hitboxDataName, "rb");
@@ -26,6 +26,7 @@ public:
     fclose(dataFile);
 
     player = new Player(playerDataName);
+    Enemy::ReadPatternData(ePatternDataName);
     for (int i = 0; i < ENEMY_MAX_SIZE; i++) enemy[i] = new Enemy();
     for (int i = 0; i < PBULLET_MAX_SIZE; i++) pBullet[i] = new Bullet();
     for (int i = 0; i < EBULLET_MAX_SIZE; i++) eBullet[i] = new Bullet();
@@ -37,6 +38,7 @@ public:
   ~ObjectManager()
   {
     delete player;
+    Enemy::DeletePatternData();
     for (int i = 0; i < ENEMY_MAX_SIZE; i++) delete enemy[i];
     for (int i = 0; i < PBULLET_MAX_SIZE; i++) delete pBullet[i];
     for (int i = 0; i < EBULLET_MAX_SIZE; i++) delete eBullet[i];
@@ -47,7 +49,7 @@ public:
     while (enemyDataP < enemyDataSize && enemyData[enemyDataP].time <= stageTime) {
       for (int i = 0; i < ENEMY_MAX_SIZE; i++) {
         if (!enemy[i]->IsExist()) {
-          dynamic_cast<Enemy*>(enemy[i])->Spawn(enemyData[enemyDataP].pos, Vector<double>(0.0, 1.0), enemyData[enemyDataP].graphicID);
+          dynamic_cast<Enemy*>(enemy[i])->Spawn(enemyData[enemyDataP].pos, enemyData[enemyDataP].graphicID, enemyData[enemyDataP].patternID);
           break;
         }
       }

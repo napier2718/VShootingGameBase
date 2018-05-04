@@ -21,7 +21,7 @@ void Player::Exe(DrawManager *dm, int *area, BaseObject **bList)
   if (keyBuffer[KEY_INPUT_RIGHT]) move.x++;
   if (keyBuffer[KEY_INPUT_LEFT])  move.x--;
   if (--shotWait < 0 && keyBuffer[KEY_INPUT_Z]) {
-    for (unsigned int i = 0; i < shotData.size(); i++)
+    for (int i = 0; i < shotDataSize; i++)
     {
       Vector<double> bPos = pos + shotData[i].pos;
       Shoot(bList, bPos, shotData[i].angle, shotData[i].v, shotData[i].graphicID);
@@ -63,15 +63,13 @@ FILE *Player::ReadPlayerData(FILE *dataFile)
   fread_s(&gStartID, sizeof(int), sizeof(int), 1, dataFile);
   fread_s(&shotWaitTime, sizeof(int), sizeof(int), 1, dataFile);
   graphicID = gStartID;
-  int size;
-  fread_s(&size, sizeof(int), sizeof(int), 1, dataFile);
-  for (int i = 0; i < size; i++) {
-    BulletData bulletData;
-    fread_s(&bulletData.pos, sizeof(double) * 2, sizeof(double), 2, dataFile);
-    fread_s(&bulletData.v, sizeof(double) * 2, sizeof(double), 2, dataFile);
-    fread_s(&bulletData.graphicID, sizeof(int), sizeof(int), 1, dataFile);
-    fread_s(&bulletData.angle, sizeof(double), sizeof(double), 1, dataFile);
-    shotData.push_back(bulletData);
+  fread_s(&shotDataSize, sizeof(int), sizeof(int), 1, dataFile);
+  shotData = new BulletData[shotDataSize];
+  for (int i = 0; i < shotDataSize; i++) {
+    fread_s(&shotData[i].pos, sizeof(double) * 2, sizeof(double), 2, dataFile);
+    fread_s(&shotData[i].v, sizeof(double) * 2, sizeof(double), 2, dataFile);
+    fread_s(&shotData[i].graphicID, sizeof(int), sizeof(int), 1, dataFile);
+    fread_s(&shotData[i].angle, sizeof(double), sizeof(double), 1, dataFile);
   }
   return dataFile;
 }

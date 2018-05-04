@@ -26,6 +26,8 @@ private:
   FILE *LoadImages(FILE*);
   FILE *ReadGraphicData(FILE*);
   int *area;
-  Graphic graphicList[10];
+  Graphic *graphicList;
+  int graphicListSize;
   int gHandle[100];
+  int gHandleSize;
 };
