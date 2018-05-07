@@ -20,7 +20,7 @@ struct Object
 };
 enum LinkType
 {
-  none,
+  lNone,
   startLink,
   endLink,
 };

@@ -12,7 +12,7 @@ class Player :public BaseObject
 public:
   Player(const char *dataFileName);
   ~Player() { delete[] shotData; }
-  void Exe(DrawManager *dm, int *area, BaseObject **bList);
+  void Exe(DrawManager *dm, int *area, BaseObject **bList, BaseObject *enemy);
   void Draw(DrawManager *dm);
   void Hit();
 private:

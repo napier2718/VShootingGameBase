@@ -1,6 +1,6 @@
 #include "Bullet.h"
 
-void Bullet::Exe(DrawManager *dm, int *area, BaseObject **bList)
+void Bullet::Exe(DrawManager *dm, int *area, BaseObject **bList, BaseObject *enemy)
 {
   if (isExist) {
     pos += vel;

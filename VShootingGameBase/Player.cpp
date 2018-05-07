@@ -11,7 +11,7 @@ Player::Player(const char *dataFileName) :BaseObject(), shotWait(0)
   fclose(dataFile);
   isExist = true;
 }
-void Player::Exe(DrawManager *dm, int *area, BaseObject **bList)
+void Player::Exe(DrawManager *dm, int *area, BaseObject **bList, BaseObject *enemy)
 {
   char keyBuffer[256];
   GetHitKeyStateAll(keyBuffer);

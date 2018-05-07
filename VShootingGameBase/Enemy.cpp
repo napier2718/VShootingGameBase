@@ -1,15 +1,57 @@
 #include "Enemy.h"
 #include "Bullet.h"
 
-void Enemy::Exe(DrawManager *dm, int *area, BaseObject **bList)
+void Enemy::Exe(DrawManager *dm, int *area, BaseObject **bList, BaseObject *enemy)
 {
   if (isExist) {
-    switch (pDataList[patternID].list[counter++ % pDataList[patternID].size]) {
-    case normal_move:
-      pos.y += 1.0;
+    DirectionType direction = pDataList[patternID].list[counter % pDataList[patternID].size].direction;
+    switch (pDataList[patternID].list[counter++ % pDataList[patternID].size].pattern) {
+    case move_normal:
+      switch (direction)
+      {
+      case up:
+        pos.y -= 1.0;
+        break;
+      case down:
+        pos.y += 1.0;
+        break;
+      case right:
+        pos.x += 1.0;
+        break;
+      case left:
+        pos.x -= 1.0;
+        break;
+      case player:
+        Vector<double> v = enemy->GetPosition() - pos;
+        v.normalize();
+        pos += v;
+        break;
+      }
       break;
     case shot:
-      Shoot(bList, pos, 0.0, Vector<double>(0.0, 3.0), 7);
+      Vector<double> v;
+      switch (direction)
+      {
+      case up:
+        v.set(0.0, -3.0);
+        break;
+      case down:
+        v.set(0.0, 3.0);
+        break;
+      case right:
+        v.set(3.0, 0.0);
+        break;
+      case left:
+        v.set(-3.0, 0.0);
+        break;
+      case player:
+        v = enemy->GetPosition() - pos;
+        v.normalize();
+        v *= 3.0;
+        break;
+      }
+      Shoot(bList, pos, 0.0, v, 7);
+      break;
       counter++;
       break;
     }
@@ -50,8 +92,8 @@ void Enemy::ReadPatternData(const char *dataFileName)
   pDataList = new PatternData[pDataListSize];
   for (int i = 0; i < pDataListSize; i++) {
     fread_s(&pDataList[i].size, sizeof(int), sizeof(int), 1, dataFile);
-    pDataList[i].list = new PatternType[pDataList[i].size];
-    fread_s(pDataList[i].list, sizeof(PatternType) * pDataList[i].size, sizeof(PatternType), pDataList[i].size, dataFile);
+    pDataList[i].list = new BasePattern[pDataList[i].size];
+    fread_s(pDataList[i].list, sizeof(BasePattern) * pDataList[i].size, sizeof(BasePattern), pDataList[i].size, dataFile);
   }
   fclose(dataFile);
 }

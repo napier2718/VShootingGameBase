@@ -1,22 +1,36 @@
 #pragma once
 #include "BaseObject.h"
 
-enum PatternType
+enum BasePatternType
 {
   wait,
-  normal_move,
+  move_normal,
   shot,
+};
+enum DirectionType
+{
+  dNone,
+  up,
+  down,
+  right,
+  left,
+  player,
+};
+struct BasePattern
+{
+  BasePatternType pattern;
+  DirectionType direction;
 };
 struct PatternData
 {
   int size;
-  PatternType* list;
+  BasePattern* list;
 };
 class Enemy :public BaseObject
 {
 public:
   Enemy() :BaseObject() {}
-  void Exe(DrawManager *dm, int *area, BaseObject **bList);
+  void Exe(DrawManager *dm, int *area, BaseObject **bList, BaseObject *enemy);
   void Draw(DrawManager *dm);
   void Hit();
   void Spawn(Vector<double> &p, int gID, int pID);

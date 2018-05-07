@@ -56,10 +56,10 @@ public:
       }
       enemyDataP++;
     }
-    player->Exe(dm, area, pBullet);
-    for (int i = 0; i < ENEMY_MAX_SIZE; i++) enemy[i]->Exe(dm, area, eBullet);
-    for (int i = 0; i < PBULLET_MAX_SIZE; i++) pBullet[i]->Exe(dm, area, pBullet);
-    for (int i = 0; i < EBULLET_MAX_SIZE; i++) eBullet[i]->Exe(dm, area, eBullet);
+    player->Exe(dm, area, pBullet, NULL);
+    for (int i = 0; i < ENEMY_MAX_SIZE; i++) enemy[i]->Exe(dm, area, eBullet, player);
+    for (int i = 0; i < PBULLET_MAX_SIZE; i++) pBullet[i]->Exe(dm, area, pBullet, NULL);
+    for (int i = 0; i < EBULLET_MAX_SIZE; i++) eBullet[i]->Exe(dm, area, eBullet, NULL);
     for (int i = 0; i < ENEMY_MAX_SIZE; i++) {
       if (!enemy[i]->isExist) continue;
       if (HitCheck(player, enemy[i])) {
