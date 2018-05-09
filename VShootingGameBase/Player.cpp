@@ -3,7 +3,7 @@
 
 #include "DxLib.h"
 
-Player::Player(const char *dataFileName) :BaseObject(), shotWait(0)
+Player::Player(const char *dataFileName) :BaseObject(), shotWait(0), hitCounter(0)
 {
   FILE *dataFile;
   fopen_s(&dataFile, dataFileName, "rb");
@@ -44,9 +44,12 @@ void Player::Exe(DrawManager *dm, int *area, BaseObject **bList, BaseObject *ene
 }
 void Player::Draw(DrawManager *dm)
 {
-  dm->Draw((int)pos.x, (int)pos.y, angle, graphicID, 0);
+  dm->Draw((int)pos.x, (int)pos.y, angle, graphicID, 0, (hitCounter-- % 16 > 7 ? true : false));
 }
-void Player::Hit() { }
+void Player::Hit()
+{
+  if(hitCounter <= 0) hitCounter = 63;
+}
 void Player::Shoot(BaseObject **bList, Vector<double> &p, const double &Angle, Vector<double> &v, int gID)
 {
   for (int i = 0; i < PBULLET_MAX_SIZE; i++) {

@@ -3,6 +3,7 @@
 
 enum BasePatternType
 {
+  pNone,
   wait,
   move_normal,
   shot,

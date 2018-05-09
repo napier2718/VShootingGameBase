@@ -21,6 +21,7 @@ private:
   int gStartID;
   double speed;
   int shotWait, shotWaitTime;
+  int hitCounter;
   BulletData *shotData;
   int shotDataSize;
 };
